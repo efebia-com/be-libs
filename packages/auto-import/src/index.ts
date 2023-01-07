@@ -1,5 +1,5 @@
 import fp from 'fastify-plugin';
-import { Globber, globFiles } from './globber.js';
+import { Globber, globFiles } from './globber';
 
 export = fp<Globber>(async (fastify, opts) => {
     const globbedFiles = await globFiles({

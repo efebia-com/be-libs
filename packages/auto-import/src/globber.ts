@@ -2,8 +2,8 @@ import { readdir } from "node:fs/promises";
 import path from "node:path";
 import url, { fileURLToPath } from "node:url";
 import pino from "pino";
-import { pkgUp } from "pkg-up";
-import { serial } from "./serial.js";
+import pkgUp from "pkg-up";
+import { serial } from "./serial";
 
 export type Globber = {
   directory?: string;
@@ -23,20 +23,21 @@ export const globFiles = async (
   opts: Required<Globber> & { log?: pino.BaseLogger }
 ) => {
   const packageType = await getPackageType(opts.directory);
-  const startingDirectory = path.dirname(fileURLToPath(opts.startingDirectory));
+  const startingDirectory = packageType === 'module' ? path.dirname(fileURLToPath(opts.startingDirectory)) : opts.startingDirectory;
   const pluginsDirectory = path.join(startingDirectory, opts.directory);
   const routesDirectories = await readdir(pluginsDirectory);
-
+    
   const importedFiles = await serial(
     routesDirectories.map((dir) => async () => {
       const osPath = path.join(
         pluginsDirectory,
         dir,
-        `${opts.routeFile.replace(".js", "")}.js`
+        packageType === 'module' ? `${opts.routeFile.replace(".js", "")}.js` : opts.routeFile.replace(".js", "")
       );
+      const href = url.pathToFileURL(osPath).href
       try {
         if (packageType === "module") {
-          const importedPlugin = await import(url.pathToFileURL(osPath).href);
+          const importedPlugin = await import(href);
           return importedPlugin.default;
         }
         return require(osPath);
