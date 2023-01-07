@@ -6,7 +6,8 @@ export = fp<Globber>(async (fastify, opts) => {
         ...opts,
         routeFile: opts.routeFile ?? 'routes',
         directory: opts.directory ?? 'src/plugins',
-        log: opts.log || fastify.log
+        log: opts.log || fastify.log,
+        excludedDirectories: opts.excludedDirectories ?? []
     });
 
     await Promise.all(globbedFiles.map(async (globbedFile) => {

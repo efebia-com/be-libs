@@ -10,6 +10,7 @@ export type Globber = {
   routeFile?: string;
   startingDirectory: string;
   log?: pino.BaseLogger;
+  excludedDirectories?: string[];
 };
 
 const getPackageType = async (directory: string) => {
@@ -26,9 +27,11 @@ export const globFiles = async (
   const startingDirectory = packageType === 'module' ? path.dirname(fileURLToPath(opts.startingDirectory)) : opts.startingDirectory;
   const pluginsDirectory = path.join(startingDirectory, opts.directory);
   const routesDirectories = await readdir(pluginsDirectory);
+
+  const filteredDirectories = routesDirectories.filter(dir => !opts.excludedDirectories.includes(dir))
     
   const importedFiles = await serial(
-    routesDirectories.map((dir) => async () => {
+    filteredDirectories.map((dir) => async () => {
       const osPath = path.join(
         pluginsDirectory,
         dir,
