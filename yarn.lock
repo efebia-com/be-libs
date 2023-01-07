@@ -5,6 +5,48 @@ __metadata:
   version: 6
   cacheKey: 8
 
+"@efebia/env-loader@workspace:packages/env-loader":
+  version: 0.0.0-use.local
+  resolution: "@efebia/env-loader@workspace:packages/env-loader"
+  languageName: unknown
+  linkType: soft
+
+"@efebia/fastify-auto-import@workspace:packages/auto-import":
+  version: 0.0.0-use.local
+  resolution: "@efebia/fastify-auto-import@workspace:packages/auto-import"
+  languageName: unknown
+  linkType: soft
+
+"@efebia/fastify-rapidoc@workspace:packages/fastify-rapidoc":
+  version: 0.0.0-use.local
+  resolution: "@efebia/fastify-rapidoc@workspace:packages/fastify-rapidoc"
+  languageName: unknown
+  linkType: soft
+
+"@efebia/fastify-reply@workspace:packages/fastify-reply":
+  version: 0.0.0-use.local
+  resolution: "@efebia/fastify-reply@workspace:packages/fastify-reply"
+  languageName: unknown
+  linkType: soft
+
+"@efebia/hardhat-compile-monorepo@workspace:packages/hardhat-compile-monorepo":
+  version: 0.0.0-use.local
+  resolution: "@efebia/hardhat-compile-monorepo@workspace:packages/hardhat-compile-monorepo"
+  languageName: unknown
+  linkType: soft
+
+"@efebia/pino-mongodb@workspace:packages/pino-mongodb":
+  version: 0.0.0-use.local
+  resolution: "@efebia/pino-mongodb@workspace:packages/pino-mongodb"
+  languageName: unknown
+  linkType: soft
+
+"@efebia/sqs-queue@workspace:packages/sqs-queue":
+  version: 0.0.0-use.local
+  resolution: "@efebia/sqs-queue@workspace:packages/sqs-queue"
+  languageName: unknown
+  linkType: soft
+
 "efebia-libs@workspace:.":
   version: 0.0.0-use.local
   resolution: "efebia-libs@workspace:."
