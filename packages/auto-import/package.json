@@ -1,5 +1,17 @@
 {
     "name": "@efebia/fastify-auto-import",
     "version": "0.0.1",
-    "license": "MIT"
+    "license": "MIT",
+    "dependencies": {
+        "fastify-plugin": "^4.4.0",
+        "pino": "^8.8.0",
+        "pkg-up": "^4.0.0"
+    },
+    "devDependencies": {
+        "@types/node": "^18.11.18"
+    },
+    "files": [
+        "/lib"
+    ],
+    "main": "./lib"
 }
