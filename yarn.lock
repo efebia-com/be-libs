@@ -434,6 +434,7 @@ __metadata:
     pino: ^8.8.0
     pkg-up: ^3.1.0
     ts-jest: ^29.0.3
+    typescript: ^4.9.4
   languageName: unknown
   linkType: soft
 
