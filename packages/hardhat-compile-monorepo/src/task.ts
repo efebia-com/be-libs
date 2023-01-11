@@ -102,7 +102,6 @@ task(TASK_COMPILE, async (args, hre, runSuper) => {
 
         fs.mkdirSync(path.dirname(currentPath), { recursive: true });
 
-        //console.log(`${dependency}/${globbedFile}`);
         return {
           path: currentPath,
           dependency: `${dependency}/${globbedFile}`,
