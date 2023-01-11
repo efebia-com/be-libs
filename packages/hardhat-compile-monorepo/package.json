@@ -1,5 +1,13 @@
 {
     "name": "@efebia/hardhat-compile-monorepo",
     "version": "0.0.1",
-    "license": "MIT"
+    "license": "MIT",
+    "main": "dist/index.js",
+    "dependencies": {
+        "glob": "^8.0.3",
+        "hardhat": "^2.12.6"
+    },
+    "devDependencies": {
+        "@types/glob": "^8.0.0"
+    }
 }
