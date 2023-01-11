@@ -1,5 +1,15 @@
 {
     "name": "@efebia/pino-mongodb",
     "version": "0.0.1",
-    "license": "MIT"
+    "license": "MIT",
+    "main": "dist/index.js",
+    "dependencies": {
+        "mongodb": "^4.8.1",
+        "pino-abstract-transport": "^1.0.0",
+        "sonic-boom": "^3.2.0"
+    },
+    "devDependencies": {
+        "@types/node": "18",
+        "typescript": "^4.7.4"
+    }
 }
