@@ -1356,9 +1356,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@efebia/sqs-queue@workspace:packages/sqs-queue":
+"@efebia/sqs-queue-v2@workspace:packages/sqs-queue-v2":
   version: 0.0.0-use.local
-  resolution: "@efebia/sqs-queue@workspace:packages/sqs-queue"
+  resolution: "@efebia/sqs-queue-v2@workspace:packages/sqs-queue-v2"
+  dependencies:
+    "@types/node": ^18.11.18
+    typescript: ^4.9.4
   languageName: unknown
   linkType: soft
 
