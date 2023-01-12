@@ -3,8 +3,8 @@ name: 'Deploy @efebia/env-loader'
 on:
   workflow_dispatch:
   push:
-    branches: ['master']
-    paths: ['./packages/env-loader/**', './.github/workflows/common-deploy.yml']
+    branches: [ master ]
+    paths: ['./packages/env-loader/**', './.github/workflows/common-deploy.yml', './.github/workflows/env-loader.yml']
 
 jobs:
   publish:

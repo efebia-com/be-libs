@@ -3,8 +3,8 @@ name: 'Deploy @efebia/pino-mongodb'
 on:
   workflow_dispatch:
   push:
-    branches: ['master']
-    paths: ['./packages/pino-mongodb/**', './.github/workflows/common-deploy.yml']
+    branches: [ master ]
+    paths: ['./packages/pino-mongodb/**', './.github/workflows/common-deploy.yml', './.github/workflows/pino-mongodb.yml']
 
 jobs:
   publish:
