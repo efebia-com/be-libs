@@ -28,7 +28,8 @@ jobs:
           scope: '@efebia'
       - name: Build package
         run: |
-          ${{ inputs.install-script || 'yarn workspaces focus ${{ inputs.package-name }}' }}
+          PACKAGE_NAME=${{ inputs.package-name }}
+          ${{ inputs.install-script || 'yarn workspaces focus ${PACKAGE_NAME}' }}
           yarn workspace ${{ inputs.package-name }} build
       - name: Publish
         env:
