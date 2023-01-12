@@ -1,13 +1,13 @@
 import { extendConfig } from 'hardhat/config';
-const name = '@efebia/hardhat-compile-monorepo'
 
+import { packageName } from './constants';
 import './task';
 import './types';
 
 extendConfig((config, userConfig) => {
     config.compileMonorepo = Object.assign({
         paths: [] as string[],
-        path: `./${name}`,
+        path: `./${packageName}`,
         keep: false
     }, userConfig.compileMonorepo);
 });
