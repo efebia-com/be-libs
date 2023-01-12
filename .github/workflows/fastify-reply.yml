@@ -11,4 +11,5 @@ jobs:
     uses: ./.github/workflows/common-deploy.yml
     with:
       package-name: "@efebia/fastify-reply"
+      install-script: "yarn --immutable"
     secrets: inherit

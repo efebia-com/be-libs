@@ -6,6 +6,10 @@ on:
       package-name:
         required: true
         type: string
+      install-script:
+        required: false
+        type: string
+        default: 'yarn workspaces focus ${{ inputs.package-name }}'
 
 jobs:
   publish:
