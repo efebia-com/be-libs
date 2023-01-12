@@ -1,11 +1,12 @@
 name: 'Deploy @efebia/fastify-reply'
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
     paths:
-      - ./packages/fastify-reply
+      - ./packages/fastify-reply/**
       - ./.github/workflows/common-deploy.yml
 
 jobs:

@@ -1,11 +1,12 @@
 name: 'Deploy @efebia/hardhat-compile-monorepo'
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
     paths:
-      - ./packages/hardhat-compile-monorepo
+      - ./packages/hardhat-compile-monorepo/**
       - ./.github/workflows/common-deploy.yml
 
 jobs:

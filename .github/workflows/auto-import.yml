@@ -1,11 +1,12 @@
 name: 'Deploy @efebia/fastify-auto-import'
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
     paths:
-      - ./packages/auto-import
+      - ./packages/auto-import/**
       - ./.github/workflows/common-deploy.yml
 
 jobs:

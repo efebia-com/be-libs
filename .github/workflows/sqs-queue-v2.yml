@@ -1,11 +1,12 @@
 name: 'Deploy @efebia/sqs-queue-v2'
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
     paths:
-      - ./packages/sqs-queue-v2
+      - ./packages/sqs-queue-v2/**
       - ./.github/workflows/common-deploy.yml
 
 jobs:

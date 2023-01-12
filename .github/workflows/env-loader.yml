@@ -1,11 +1,12 @@
 name: 'Deploy @efebia/env-loader'
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
     paths:
-      - ./packages/env-loader
+      - ./packages/env-loader/**
       - ./.github/workflows/common-deploy.yml
 
 jobs:

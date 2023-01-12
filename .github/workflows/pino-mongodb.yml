@@ -1,11 +1,12 @@
 name: 'Deploy @efebia/pino-mongodb'
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
     paths:
-      - ./packages/pino-mongodb
+      - ./packages/pino-mongodb/**
       - ./.github/workflows/common-deploy.yml
 
 jobs:
