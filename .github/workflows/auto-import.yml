@@ -6,6 +6,7 @@ on:
       - master
     paths:
       - ./packages/auto-import
+      - ./.github/workflows/common-deploy.yml
 
 jobs:
   publish:

@@ -6,6 +6,7 @@ on:
       - master
     paths:
       - ./packages/sqs-queue-v2
+      - ./.github/workflows/common-deploy.yml
 
 jobs:
   publish:
