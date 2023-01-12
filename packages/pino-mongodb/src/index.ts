@@ -1,7 +1,6 @@
 import { MongoClient, type MongoClientOptions } from 'mongodb';
 import build from 'pino-abstract-transport';
 import { Writable } from 'stream';
-import { name } from '../package.json';
 import log from './log.js';
 import { createMessageQueue, type Options as QueueOptions } from './queue.js';
 
@@ -35,8 +34,8 @@ const bulkTransport = async (opts: Options) => {
         queueOptions
     } = { ...defaultOption, ...opts };
 
-    if (!uri) throw new Error(`${name}: URI_NOT_SPECIFIED`);
-    if (!collectionName) throw new Error(`${name}: COLLECTION_NAME_NOT_SPECIFIED`);
+    if (!uri) throw new Error(`@efebia/pino-mongodb: URI_NOT_SPECIFIED`);
+    if (!collectionName) throw new Error(`@efebia/pino-mongodb: COLLECTION_NAME_NOT_SPECIFIED`);
 
 
     const client = new MongoClient(uri, clientOptions);
