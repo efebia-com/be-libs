@@ -1401,6 +1401,10 @@ __metadata:
 "@efebia/fastify-reply@workspace:packages/fastify-reply":
   version: 0.0.0-use.local
   resolution: "@efebia/fastify-reply@workspace:packages/fastify-reply"
+  dependencies:
+    fastify-plugin: ^4.4.0
+  peerDependencies:
+    fastify: ^4.0.0
   languageName: unknown
   linkType: soft
 

@@ -1,5 +1,12 @@
 {
     "name": "@efebia/fastify-reply",
     "version": "0.0.1",
-    "license": "MIT"
+    "license": "MIT",
+    "main": "dist/index.js",
+    "dependencies": {
+        "fastify-plugin": "^4.4.0"
+    },
+    "peerDependencies": {
+        "fastify": "^4.0.0"
+    }
 }
