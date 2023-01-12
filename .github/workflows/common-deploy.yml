@@ -30,4 +30,6 @@ jobs:
       - name: Publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: yarn workspace ${{ inputs.package-name }} npm publish
+        run: |
+          echo "npmAuthToken: ${NODE_AUTH_TOKEN}" >> .yarnrc.yml
+          yarn workspace ${{ inputs.package-name }} npm publish
