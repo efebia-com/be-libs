@@ -1,6 +1,6 @@
 import { DeleteMessageCommand, Message, ReceiveMessageCommand, ReceiveMessageCommandInput, SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import EventEmitter from "events";
-import { name as packageName } from '../package.json';
+const packageName = '@efebia/sqs-queue-v3';
 
 export type QueueOptions = {
     sleepTimeout: number;

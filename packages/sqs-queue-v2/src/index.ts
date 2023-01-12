@@ -1,6 +1,7 @@
 import AWS from "aws-sdk";
 import EventEmitter from "events";
-import { name as packageName } from '../package.json';
+const packageName = '@efebia/sqs-queue-v2';
+
 
 export type QueueOptions = {
     sleepTimeout: number;
