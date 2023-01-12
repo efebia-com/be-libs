@@ -19,7 +19,8 @@
         "/lib"
     ],
     "scripts": {
-        "test": "yarn node $(yarn bin jest)"
+        "test": "yarn node $(yarn bin jest)",
+        "build": "tsc"
     },
     "main": "./lib"
 }
