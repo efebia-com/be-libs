@@ -1,0 +1,19 @@
+{
+    "name": "@efebia/mongoose-utils",
+    "version": "0.0.1",
+    "license": "MIT",
+    "devDependencies": {
+        "@types/node": "^18.11.18",
+        "typescript": "^4.9.4"
+    },
+    "files": [
+        "/lib"
+    ],
+    "scripts": {
+        "build": "tsc"
+    },
+    "main": "./lib",
+    "dependencies": {
+        "mongoose": "^6.8.3"
+    }
+}

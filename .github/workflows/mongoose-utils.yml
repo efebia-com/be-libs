@@ -1,0 +1,14 @@
+name: 'Deploy @efebia/mongoose-utils'
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+    paths: ['packages/mongoose-utils/**', '.github/workflows/common-deploy.yml', '.github/workflows/mongoose-utils.yml']
+
+jobs:
+  publish:
+    uses: ./.github/workflows/common-deploy.yml
+    with:
+      package-name: "@efebia/mongoose-utils"
+    secrets: inherit
