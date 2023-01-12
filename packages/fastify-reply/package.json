@@ -14,5 +14,8 @@
     "scripts": {
         "build": "tsc"
     },
-    "main": "./lib"
+    "main": "./lib",
+    "devDependencies": {
+        "typescript": "^4.9.4"
+    }
 }

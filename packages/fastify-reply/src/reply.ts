@@ -1,5 +1,5 @@
 import { FastifyReply } from "fastify";
-import { name } from "../package.json";
+const name = '@efebia/fastify-reply';
 
 type ReplyFunction<T> = T extends (...args: any[]) => any
   ? (this: FastifyReply, ...args: Parameters<T>) => ReturnType<T>
