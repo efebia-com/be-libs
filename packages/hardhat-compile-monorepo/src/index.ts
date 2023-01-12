@@ -1,6 +1,5 @@
 import { extendConfig } from 'hardhat/config';
-
-import { name } from '../package.json';
+const name = '@efebia/hardhat-compile-monorepo'
 
 import './task';
 import './types';
