@@ -1,4 +1,4 @@
-name: 'Deploy package'
+name: 'Deploy @efebia/fastify-auto-import'
 
 on:
   push:

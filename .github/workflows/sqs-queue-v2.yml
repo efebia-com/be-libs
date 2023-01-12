@@ -1,4 +1,4 @@
-name: 'Deploy package'
+name: 'Deploy @efebia/sqs-queue-v2'
 
 on:
   push:
