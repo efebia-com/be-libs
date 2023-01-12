@@ -1,0 +1,15 @@
+name: 'Deploy package'
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - ./packages/fastify-reply
+
+jobs:
+  publish:
+    uses: ./.github/workflows/common-deploy.yml
+    with:
+      package-name: "@efebia/fastify-reply"
+    secrets: inherit

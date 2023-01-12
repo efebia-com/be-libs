@@ -1,0 +1,15 @@
+name: 'Deploy package'
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - ./packages/env-loader
+
+jobs:
+  publish:
+    uses: ./.github/workflows/common-deploy.yml
+    with:
+      package-name: "@efebia/env-loader"
+    secrets: inherit

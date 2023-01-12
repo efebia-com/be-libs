@@ -1,0 +1,15 @@
+name: 'Deploy package'
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - ./packages/sqs-queue-v3
+
+jobs:
+  publish:
+    uses: ./.github/workflows/common-deploy.yml
+    with:
+      package-name: "@efebia/sqs-queue-v3"
+    secrets: inherit

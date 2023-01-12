@@ -1,0 +1,33 @@
+name: 'Common Deploy'
+
+on:
+  workflow_call:
+    inputs:
+      package-name:
+        required: true
+        type: string
+
+jobs:
+  publish:
+    name: 'Publish'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print package name
+        run: echo Publishing ${{ inputs.package-name }}
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'yarn'
+          scope: '@efebia'
+      - name: Build package
+        run: |
+          yarn workspaces focus ${{ inputs.package-name }}
+          yarn workspace ${{ inputs.package-name }} build
+      - name: Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: yarn workspace ${{ inputs.package-name }} npm publish
