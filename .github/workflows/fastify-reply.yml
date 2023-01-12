@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [ master ]
-    paths: ['./packages/fastify-reply/**', './.github/workflows/common-deploy.yml', './.github/workflows/fastify-reply.yml']
+    paths: ['packages/fastify-reply/**', '.github/workflows/common-deploy.yml', '.github/workflows/fastify-reply.yml']
 
 jobs:
   publish:

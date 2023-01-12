@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [ master ]
-    paths: ['./packages/env-loader/**', './.github/workflows/common-deploy.yml', './.github/workflows/env-loader.yml']
+    paths: ['packages/env-loader/**', '.github/workflows/common-deploy.yml', '.github/workflows/env-loader.yml']
 
 jobs:
   publish:
