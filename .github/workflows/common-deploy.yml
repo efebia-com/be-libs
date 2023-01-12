@@ -9,7 +9,6 @@ on:
       install-script:
         required: false
         type: string
-        default: 'yarn workspaces focus ${{ inputs.package-name }}'
 
 jobs:
   publish:
@@ -29,7 +28,7 @@ jobs:
           scope: '@efebia'
       - name: Build package
         run: |
-          ${{ inputs.install-script }}
+          ${{ inputs.install-script || 'yarn workspaces focus ${{ inputs.package-name }}' }}
           yarn workspace ${{ inputs.package-name }} build
       - name: Publish
         env:
