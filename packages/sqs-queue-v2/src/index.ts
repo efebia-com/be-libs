@@ -5,6 +5,7 @@ const packageName = '@efebia/sqs-queue-v2';
 
 export type QueueOptions = {
     sleepTimeout: number;
+    errorCallback: (error: any) => void | Promise<void>;
 };
 
 export type QueueConstructorOptions = {
@@ -45,6 +46,7 @@ export class Queue extends EventEmitter {
     this.options = Object.assign(
       {
         sleepTimeout: 5000,
+        errorCallback: (e) => console.error(e) 
       },
       otherOptions
     );
@@ -52,7 +54,6 @@ export class Queue extends EventEmitter {
 
   async start<TMessage extends object>(
     callback: QueueCallback<TMessage>,
-    errorCallback: (error: any) => void | Promise<void>,
     canThrow = false
   ) {
     while (this.forever) {
@@ -67,7 +68,7 @@ export class Queue extends EventEmitter {
         }
       } catch (error) {
         if (canThrow) throw error;
-        await errorCallback(error);
+        await this.options.errorCallback(error);
         await sleep(this.options.sleepTimeout);
       }
     }
