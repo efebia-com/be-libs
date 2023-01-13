@@ -11,4 +11,7 @@ jobs:
     uses: ./.github/workflows/common-deploy.yml
     with:
       package-name: "@efebia/sqs-queue-v2"
+      install-script: |
+        yarn workspaces focus @efebia/sqs-queue-v2
+        yarn workspace @efebia/queue build
     secrets: inherit
