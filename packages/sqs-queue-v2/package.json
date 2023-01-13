@@ -1,12 +1,13 @@
 {
     "name": "@efebia/sqs-queue-v2",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "license": "MIT",
     "devDependencies": {
         "@types/node": "^18.11.18",
         "typescript": "^4.9.4"
     },
     "dependencies": {
+        "@efebia/queue": "workspace:^",
         "aws-sdk": "^2.1292.0"
     },
     "files": [

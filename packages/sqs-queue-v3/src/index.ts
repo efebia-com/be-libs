@@ -1,15 +1,18 @@
-import { DeleteMessageCommand, Message, ReceiveMessageCommand, ReceiveMessageCommandInput, SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
-import EventEmitter from "events";
-const packageName = '@efebia/sqs-queue-v3';
-
-export type QueueOptions = {
-    sleepTimeout: number;
-    errorCallback: (error: any) => void | Promise<void>;
-};
+import {
+  DeleteMessageCommand,
+  Message,
+  ReceiveMessageCommand,
+  ReceiveMessageCommandInput,
+  SQSClient,
+  SendMessageCommand,
+} from "@aws-sdk/client-sqs";
+import { Queue as BaseQueue, QueueOptions, SentMessage } from "@efebia/queue";
+const packageName = "@efebia/sqs-queue-v3";
 
 export type QueueConstructorOptions = {
-    client: SQSClient;
-    receiveOptions: ReceiveMessageCommandInput;
+  client: SQSClient;
+  receiveOptions: ReceiveMessageCommandInput;
+  canRead?: () => boolean | Promise<boolean>;
 } & Partial<QueueOptions>;
 
 export type QueueCallback<TMessage extends object> = (
@@ -18,17 +21,21 @@ export type QueueCallback<TMessage extends object> = (
   state: { del: boolean }
 ) => void | Promise<void>;
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+export class Queue<TMessage extends object> extends BaseQueue<
+  Message,
+  TMessage
+> {
+  receiveOptions: QueueConstructorOptions["receiveOptions"];
+  client: QueueConstructorOptions["client"];
+  canRead: () => boolean | Promise<boolean>;
 
-
-export class Queue extends EventEmitter {
-  receiveOptions: QueueConstructorOptions['receiveOptions'];
-  client: QueueConstructorOptions['client'];
-  forever: boolean;
-  options: Omit<QueueOptions, "client" | "receiveOptions">;
-
-  constructor({ receiveOptions, client, ...otherOptions }: QueueConstructorOptions) {
-    super();
+  constructor({
+    receiveOptions,
+    client,
+    canRead,
+    ...otherOptions
+  }: QueueConstructorOptions) {
+    super(otherOptions);
     const options: ReceiveMessageCommandInput = Object.assign<
       Partial<ReceiveMessageCommandInput>,
       ReceiveMessageCommandInput
@@ -39,37 +46,28 @@ export class Queue extends EventEmitter {
       },
       receiveOptions
     );
-    this.forever = true;
     this.receiveOptions = options;
     this.client = client;
-    this.options = Object.assign(
-      {
-        sleepTimeout: 5000,
-        errorCallback: (e) => console.error(e)
-      },
-      otherOptions
-    );
+    this.canRead = canRead ?? (() => Promise.resolve(true));
   }
 
-  async start<TMessage extends object>(
-    callback: QueueCallback<TMessage>,
-    canThrow = false
-  ) {
-    while (this.forever) {
-      try {
-        const { Messages } = await this.client
-          .send(new ReceiveMessageCommand(this.receiveOptions));
-        if (Messages == undefined) continue;
+  async readMessages() {
+    const readable = await this.canRead();
+    if (!readable) return undefined;
 
-        for (const message of Messages) {
-            await this.processMessage(message, callback);
-        }
-      } catch (error) {
-        if (canThrow) throw error;
-        await this.options.errorCallback(error);
-        await sleep(this.options.sleepTimeout);
-      }
-    }
+    const { Messages } = await this.client.send(
+      new ReceiveMessageCommand(this.receiveOptions)
+    );
+    return Messages;
+  }
+
+  async sendMessage(body: SentMessage<TMessage>) {
+    await this.client.send(
+      new SendMessageCommand({
+        QueueUrl: this.receiveOptions.QueueUrl,
+        MessageBody: JSON.stringify(body),
+      })
+    );
   }
 
   async processMessage<TMessage extends object>(
@@ -79,12 +77,12 @@ export class Queue extends EventEmitter {
     const { ReceiptHandle, Body: stringifiedBody } = message;
 
     if (!ReceiptHandle) {
-        throw new Error(`${packageName}: NO_RECEIPT_HANDLE`);
+      throw new Error(`${packageName}: NO_RECEIPT_HANDLE`);
     }
 
     if (!stringifiedBody) {
-        await this.delete(ReceiptHandle);
-        throw new Error(`${packageName}: EMPTY_BODY`);
+      await this.delete(ReceiptHandle);
+      throw new Error(`${packageName}: EMPTY_BODY`);
     }
 
     const parsedBody = JSON.parse(stringifiedBody);
@@ -96,46 +94,19 @@ export class Queue extends EventEmitter {
     const { name, params } = parsedBody;
 
     const state = { del: true };
-    if (callback) {
-      await callback(name, params, state);
-      if (state.del) {
-        await this.delete(ReceiptHandle);
-      }
-    } else {
-      this.emit(name, params, ReceiptHandle);
+    if (!callback) return;
+    await callback(name, params, state);
+    if (state.del) {
+      await this.delete(ReceiptHandle);
     }
   }
 
   delete(ReceiptHandle: string) {
-    return this.client
-      .send(new DeleteMessageCommand({
+    return this.client.send(
+      new DeleteMessageCommand({
         QueueUrl: this.receiveOptions.QueueUrl,
-        ReceiptHandle
-      }));
-  }
-
-  stop() {
-    this.forever = false;
-  }
-
-  resume(...args: Parameters<typeof this.start>) {
-    this.forever = true;
-    return this.start(...args);
-  }
-
-  isRunning() {
-    return this.forever;
-  }
-
-  send(body: { name: string; params: object }) {
-    const updatedBody = {
-        ...body,
-        params: {
-            ...body.params,
-            createdAt: new Date()
-        }
-    }
-    const MessageBody = JSON.stringify(updatedBody);
-    return this.client.send(new SendMessageCommand({ QueueUrl: this.receiveOptions.QueueUrl, MessageBody }));
+        ReceiptHandle,
+      })
+    );
   }
 }
