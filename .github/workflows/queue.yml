@@ -1,0 +1,14 @@
+name: 'Deploy @efebia/queue'
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+    paths: ['packages/queue/**', '.github/workflows/common-deploy.yml', '.github/workflows/queue.yml']
+
+jobs:
+  publish:
+    uses: ./.github/workflows/common-deploy.yml
+    with:
+      package-name: "@efebia/queue"
+    secrets: inherit
