@@ -1,9 +1,9 @@
-import { readdir } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import url, { fileURLToPath } from "node:url";
 import pino from "pino";
 import pkgUp from "pkg-up";
-import { serial } from "./serial";
+import { serial } from "./serial.js";
 
 export type Globber = {
   directory?: string;
@@ -16,7 +16,11 @@ export type Globber = {
 const getPackageType = async (directory: string) => {
   const nearestPackage = await pkgUp({ cwd: directory });
   if (nearestPackage) {
-    return require(nearestPackage).type;
+    if ('require' in global) {
+      return require(nearestPackage).type;
+    }
+    const file = await readFile(nearestPackage, { encoding: 'utf-8' });
+    return JSON.parse(file).type;
   }
 };
 
@@ -45,6 +49,7 @@ export const globFiles = async (
         }
         return require(osPath);
       } catch (e) {
+        console.log(e);
         opts.log?.error(
           { error: e, path: osPath },
           "@efebia/fastify-auto-import error on importing plugin"
