@@ -1,8 +1,7 @@
 {
     "name": "@efebia/yaml-to-ts",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Build TS interface declaration from yml file",
-    "type": "module",
     "main": "lib/yaml-to-ts.js",
     "scripts": {
         "build": "tsc"
