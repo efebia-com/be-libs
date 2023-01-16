@@ -1,0 +1,14 @@
+name: 'Deploy @efebia/fastify-yaml-to-ts'
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+    paths: ['packages/yaml-to-ts/**', '.github/workflows/common-deploy.yml', '.github/workflows/yaml-to-ts.yml']
+
+jobs:
+  publish:
+    uses: ./.github/workflows/common-deploy.yml
+    with:
+      package-name: "@efebia/yaml-to-ts"
+    secrets: inherit
