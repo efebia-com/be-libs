@@ -29,6 +29,8 @@ export type EnvValues<TKeys extends [...(keyof EnvSchema)[]]> = TKeys extends [
         [key in TFirst as key extends string
           ? ConvertToCamelCase<key>
           : never]: key extends keyof EnvSchema ? EnvSchema[key] : never;
+      } & {
+        [key in TFirst as key extends string ? key : never]: key extends keyof EnvSchema ? EnvSchema[key] : never;
       }
   : never;
 
