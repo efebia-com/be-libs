@@ -2,29 +2,54 @@ import { ConvertToCamelCase, EnvSchema, EnvValues, convertToCamelCase } from './
 
 export type EnvironmentClientOptions = {
     storage: object;
-    keyLoaders: (() => Record<string, unknown> | Promise<Record<string, unknown>>)[];
+    syncKeyLoaders?: (() => Record<string, unknown>)[];
+    asyncKeyLoaders?: (() => Promise<Record<string, unknown>>)[];
+    loadSyncKeysAtStartup?: boolean;
 }
 
 export default class EnvironmentClient {
     storage: EnvironmentClientOptions['storage'];
-    keyLoaders: EnvironmentClientOptions['keyLoaders'];
+    syncKeyLoaders: EnvironmentClientOptions['syncKeyLoaders'];
+    asyncKeyLoaders: EnvironmentClientOptions['asyncKeyLoaders'];
 
     constructor(opts?: Partial<EnvironmentClientOptions>) {
         const options = Object.assign({
             storage: {},
-            keyLoaders: []
+            syncKeyLoaders: [],
+            asyncKeyLoaders: [],
+            loadSyncKeysAtStartup: true
         }, opts);
         this.storage = options.storage;
-        this.keyLoaders = options.keyLoaders;
+        this.syncKeyLoaders = options.syncKeyLoaders;
+        this.asyncKeyLoaders = options.asyncKeyLoaders;
+        if (options.loadSyncKeysAtStartup) {
+            this.loadSyncKeys();
+        }
     }
 
-    async loadKeys() {
-        const loadedKeys = await Promise.all(this.keyLoaders.map(keyLoader => keyLoader()));
+    async loadAsyncKeys() {
+        if (!this.asyncKeyLoaders) return;
+        const loadedKeys = await Promise.all(this.asyncKeyLoaders.map(keyLoader => keyLoader()));
         const keysObject = loadedKeys.reduce((acc, curr) => ({
             ...acc,
             ...curr
         }), {});
         Object.entries(keysObject).forEach(([key, value]) => this.setEnv(key, value))
+    }
+
+    loadSyncKeys() {
+        if (!this.syncKeyLoaders) return;
+        const loadedKeys = this.syncKeyLoaders.map(keyLoader => keyLoader());
+        const keysObject = loadedKeys.reduce((acc, curr) => ({
+            ...acc,
+            ...curr
+        }), {});
+        Object.entries(keysObject).forEach(([key, value]) => this.setEnv(key, value))
+    }
+
+    async loadKeys() {
+        await this.loadAsyncKeys();
+        this.loadSyncKeys();
     }
 
     setEnv(key: string, value: unknown) {
@@ -46,6 +71,27 @@ export default class EnvironmentClient {
                 [key]: value,
                 [convertToCamelCase(key)]: value
             }
+        }
+        return values as any;
+    };
+
+    getOptionalEnv<Key extends keyof EnvSchema, Keys extends Key[] = Key[]>(...listKeys: Keys): Partial<EnvValues<Keys>> {
+        let values: Partial<
+            EnvSchema & {
+                [key in keyof EnvSchema as key extends `${string}_${string}`
+                    ? ConvertToCamelCase<key>
+                    : never]: EnvSchema[key];
+            }
+        > = {};
+        for (const key of listKeys) {
+            try {
+                const value = this.getKey(key)
+                values = {
+                    ...values,
+                    [key]: value,
+                    [convertToCamelCase(key)]: value
+                }
+            } catch {}
         }
         return values as any;
     };
