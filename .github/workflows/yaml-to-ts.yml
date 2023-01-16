@@ -1,4 +1,4 @@
-name: 'Deploy @efebia/fastify-yaml-to-ts'
+name: 'Deploy @efebia/yaml-to-ts'
 
 on:
   workflow_dispatch:
