@@ -15,11 +15,8 @@ const tryParseInt = (value: string) => {
 }
 
 const tryParseFloat = (value: string) => {
-    try {
-        return parseFloat(value);
-    } catch {
-        return null;
-    }
+    const parsed = parseFloat(value);
+    return isNaN(parsed) ? null : parsed;
 }
 
 const tryParseBoolean = (value: string) => {
