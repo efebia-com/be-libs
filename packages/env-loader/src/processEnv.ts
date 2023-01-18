@@ -25,12 +25,6 @@ const tryParseBoolean = (value: string) => {
     return null
 }
 
-const tryParseDate = (value: string) => {
-    const parsed = Date.parse(value);
-    if (isNaN(parsed)) return null;
-    return new Date(parsed);
-}
-
 const parseValue = (value: string) => {
     let parsed = tryParseJSON(value);
     if (parsed !== null) return parsed;
@@ -39,8 +33,6 @@ const parseValue = (value: string) => {
     parsed = tryParseFloat(value);
     if (parsed !== null) return parsed;
     parsed = tryParseBoolean(value);
-    if (parsed !== null) return parsed;
-    parsed = tryParseDate(value);
     if (parsed !== null) return parsed;
     return value;
 }
