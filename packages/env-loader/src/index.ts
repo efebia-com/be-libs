@@ -5,7 +5,7 @@ import { EnvSchema } from "./utils";
 
 const jsonProcessEnvKeyLoader = (key: string) => () => JSON.parse(process.env[key]!)
 
-const yamlFileKeyLoader = (filePath: string) => () => yaml.load(filePath)
+const yamlFileKeyLoader = (yamlContent: string) => () => yaml.load(yamlContent)
 
 export {
     EnvironmentClient,
