@@ -16,7 +16,11 @@ const tryParseInt = (value: string) => {
 
 const tryParseFloat = (value: string) => {
     const parsed = parseFloat(value);
-    return isNaN(parsed) ? null : parsed;
+    if (isNaN(parsed)) return null;
+    // `parseFloat` returns 0 if we have an hexadecimal string starting with 0x
+    // This is a forced check for this specific use case
+    if (parsed === 0 && parseInt(value) !== 0) return null;
+    return parsed;
 }
 
 const tryParseBoolean = (value: string) => {
