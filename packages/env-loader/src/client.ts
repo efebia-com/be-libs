@@ -72,6 +72,7 @@ export default class EnvironmentClient {
                 [convertToCamelCase(key)]: value
             }
         }
+        if (listKeys.length === 1) return values[listKeys[0]] as any;
         return values as any;
     };
 
