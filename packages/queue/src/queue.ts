@@ -74,7 +74,7 @@ export abstract class Queue<TReceivedMessage, TMessage extends object = object> 
     return this.forever;
   }
 
-  send(body: Message<TMessage>) {
+  async send(body: Message<TMessage>) {
     const updatedBody = {
         ...body,
         params: {
@@ -82,6 +82,6 @@ export abstract class Queue<TReceivedMessage, TMessage extends object = object> 
             createdAt: new Date()
         }
     }
-    this.sendMessage(updatedBody);
+    await this.sendMessage(updatedBody);
   }
 }
