@@ -1,0 +1,14 @@
+name: 'Deploy @efebia/jest-match-response'
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+    paths: ['packages/jest-match-response/**', '.github/workflows/common-deploy.yml', '.github/workflows/jest-match-response.yml']
+
+jobs:
+  publish:
+    uses: ./.github/workflows/common-deploy.yml
+    with:
+      package-name: "@efebia/jest-match-response"
+    secrets: inherit
