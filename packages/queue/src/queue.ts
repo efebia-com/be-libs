@@ -3,6 +3,7 @@ import { sleep } from "./utils";
 export type QueueOptions = {
     sleepTimeout: number;
     errorCallback: (error: any) => void | Promise<void>;
+    doneCallback: () => void | Promise<void>;
 };
 
 export type QueueCallback<TMessage> = (
@@ -30,7 +31,8 @@ export abstract class Queue<TReceivedMessage, TMessage extends object = object> 
     this.options = Object.assign(
       {
         sleepTimeout: 5000,
-        errorCallback: (e) => console.error(e)
+        errorCallback: (e) => console.error(e),
+        doneCallback: () => Promise.resolve()
       },
       opts
     );
@@ -53,6 +55,7 @@ export abstract class Queue<TReceivedMessage, TMessage extends object = object> 
         for (const message of messages) {
             await this.processMessage(message, callback);
         }
+        await this.options.doneCallback();
       } catch (error) {
         if (canThrow) throw error;
         await this.options.errorCallback(error);
