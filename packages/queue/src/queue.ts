@@ -3,7 +3,6 @@ import { sleep } from "./utils";
 export type QueueOptions = {
     sleepTimeout: number;
     errorCallback: (error: any) => void | Promise<void>;
-    doneCallback: () => void | Promise<void>;
 };
 
 export type QueueCallback<TMessage> = (
@@ -31,8 +30,7 @@ export abstract class Queue<TReceivedMessage, TMessage extends object = object> 
     this.options = Object.assign(
       {
         sleepTimeout: 5000,
-        errorCallback: (e) => console.error(e),
-        doneCallback: () => Promise.resolve()
+        errorCallback: (e) => console.error(e)
       },
       opts
     );
@@ -40,7 +38,9 @@ export abstract class Queue<TReceivedMessage, TMessage extends object = object> 
 
   abstract readMessages(): TReceivedMessage[] | Promise<TReceivedMessage[] | undefined> | undefined;
   abstract processMessage(message: TReceivedMessage,callback?: QueueCallback<TMessage>): void | Promise<void>;
-  abstract sendMessage(body: SentMessage<TMessage>): void | Promise<void>
+  abstract sendMessage(body: SentMessage<TMessage>): void | Promise<void>;
+  
+  protected processEnd(messages: TReceivedMessage[]): void | Promise<void> {}
 
   async start(
     callback: QueueCallback<TMessage>,
@@ -55,7 +55,7 @@ export abstract class Queue<TReceivedMessage, TMessage extends object = object> 
         for (const message of messages) {
             await this.processMessage(message, callback);
         }
-        await this.options.doneCallback();
+        await this.processEnd(messages);
       } catch (error) {
         if (canThrow) throw error;
         await this.options.errorCallback(error);
