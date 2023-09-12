@@ -21,7 +21,9 @@ export const toMatchResponse = async function(received, statusCode, model) {
     }
 
     if (this.isNot) return expect(jsonResponse).not.toMatchJson(model);
-    return expect(jsonResponse).toMatchJson(model)
+    expect(jsonResponse).toMatchJson(model)
+
+    return { pass: true }
 };
 
 declare module "expect" {
