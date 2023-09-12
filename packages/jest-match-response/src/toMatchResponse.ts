@@ -1,12 +1,12 @@
 import { expect } from '@jest/globals';
 import type { MatcherFunction } from "expect";
 
-export const toMatchResponse: MatcherFunction<[number, any]> = async function(received, statusCode, model) {
+export const toMatchResponse: MatcherFunction<[number, any]> = function(received, statusCode, model) {
     if (typeof received !== 'object' || !received) throw new Error('toMatchResponse: the received value needs to be of type object');
-    if (!('json' in received && typeof received.json === 'function')) throw new Error('toMatchResponse: the received value needs to have a .json method');
+    if (!('json' in received && typeof received.json === 'function')) throw new Error('toMatchResponse: the received value needs to have a .json synchronous method');
     if (!('status' in received || 'statusCode' in received)) throw new Error('toMatchResponse: the received value needs to have a status or statusCode property');
     const status = ('status' in received ? received.status : received.statusCode);
-    const jsonResponse = await received.json();
+    const jsonResponse = received.json();
 
     const statusCodePass = this.isNot ? status !== statusCode : status === statusCode;
     const message = () => (
