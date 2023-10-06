@@ -26,7 +26,7 @@ export const buildToMatchJson = (opts: Options) => {
       `Received JSON: ${this.utils.printReceived(json)}` +
       showErrors
         ? `\nValidation errors: ${this.utils.printReceived(
-            JSON.stringify(validate.errors)
+          validate.errors
           )}`
         : "";
 
