@@ -10,8 +10,7 @@ export type Options = {
     collection?: string;
     unified?: boolean;
     clientOptions?: MongoClientOptions;
-    queueOptions?: Omit<QueueOptions<unknown>, 'callback'>;
-}
+} & ({ queueOptions?: Omit<QueueOptions<unknown>, 'callback'>; } | { immediate: true})
 
 export const defaultOption: Options = {
     uri: 'mongodb://localhost:27017/logs',
@@ -31,8 +30,10 @@ const bulkTransport = async (opts: Options) => {
         database: databaseName,
         collection: collectionName,
         clientOptions,
-        queueOptions
+        queueOptions,
     } = { ...defaultOption, ...opts };
+
+    const isImmediate = 'immediate' in opts && opts.immediate;
 
     if (!uri) throw new Error(`@efebia/pino-mongodb: URI_NOT_SPECIFIED`);
     if (!collectionName) throw new Error(`@efebia/pino-mongodb: COLLECTION_NAME_NOT_SPECIFIED`);
@@ -43,6 +44,22 @@ const bulkTransport = async (opts: Options) => {
 
     const db = client.db(databaseName);
     const collection = db.collection(collectionName);
+
+    if (isImmediate) {
+        return build(async (source) => {
+            for await (let obj of source) {
+                await collection.insertOne(log(obj), { forceServerObjectId: true }).catch((e) => {
+                    if (e instanceof Error) {
+                        console.error(e);
+                    }
+                })
+            }
+        }, {
+            async close (_err) {
+                await client.close();
+            }
+        });
+    }
 
     const messageQueue = createMessageQueue({
         callback: (messages, errorCallback) => collection.bulkWrite(messages.map(e => ({
