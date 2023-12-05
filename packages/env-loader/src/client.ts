@@ -94,6 +94,7 @@ export default class EnvironmentClient {
                 }
             } catch {}
         }
+        if (listKeys.length === 1) return values[listKeys[0]] as any;
         return values as any;
     };
 
