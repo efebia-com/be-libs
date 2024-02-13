@@ -1,6 +1,6 @@
 export type ConvertToCamelCase<Key extends PropertyKey> =
   Key extends `${infer TFirst}_${infer TSecond}`
-    ? `${TFirst}${Capitalize<ConvertToCamelCase<TSecond>>}`
+    ? `${Lowercase<TFirst>}${Capitalize<ConvertToCamelCase<TSecond>>}`
     : Key;
 
 export const convertToCamelCase = (key: string): string => {
