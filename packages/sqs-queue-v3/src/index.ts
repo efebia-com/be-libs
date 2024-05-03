@@ -13,6 +13,7 @@ export type QueueConstructorOptions = {
   client: SQSClient;
   receiveOptions: ReceiveMessageCommandInput;
   canRead?: () => boolean | Promise<boolean>;
+  logger?: (obj: unknown, msg?: string) => void;
 } & Partial<QueueOptions>;
 
 export type QueueCallback<TMessage extends object> = (
@@ -28,11 +29,13 @@ export class Queue<TMessage extends object> extends BaseQueue<
   receiveOptions: QueueConstructorOptions["receiveOptions"];
   client: QueueConstructorOptions["client"];
   canRead: () => boolean | Promise<boolean>;
+  logger: NonNullable<QueueConstructorOptions['logger']>;
 
   constructor({
     receiveOptions,
     client,
     canRead,
+    logger,
     ...otherOptions
   }: QueueConstructorOptions) {
     super(otherOptions);
@@ -49,6 +52,7 @@ export class Queue<TMessage extends object> extends BaseQueue<
     this.receiveOptions = options;
     this.client = client;
     this.canRead = canRead ?? (() => Promise.resolve(true));
+    this.logger = logger || (() => {});
   }
 
   async readMessages() {
@@ -77,16 +81,19 @@ export class Queue<TMessage extends object> extends BaseQueue<
     const { ReceiptHandle, Body: stringifiedBody } = message;
 
     if (!ReceiptHandle) {
+      this.logger({ message }, `${packageName}: NO_RECEIPT_HANDLE`);
       throw new Error(`${packageName}: NO_RECEIPT_HANDLE`);
     }
 
     if (!stringifiedBody) {
+      this.logger({ message, receipt: ReceiptHandle }, `${packageName}: EMPTY_BODY`);
       await this.delete(ReceiptHandle);
       throw new Error(`${packageName}: EMPTY_BODY`);
     }
 
     const parsedBody = JSON.parse(stringifiedBody);
     if (Object.keys(parsedBody).length == 0) {
+      this.logger({ message, body: stringifiedBody, receipt: ReceiptHandle, parsed: parsedBody }, `${packageName}: BODY_NO_KEYS`);
       await this.delete(ReceiptHandle);
       return;
     }
