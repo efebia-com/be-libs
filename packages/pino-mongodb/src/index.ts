@@ -10,6 +10,7 @@ export type Options = {
     collection?: string;
     unified?: boolean;
     clientOptions?: MongoClientOptions;
+    onError?: (messages: unknown[], error: unknown) => void;
 } & ({ queueOptions?: Omit<QueueOptions<unknown>, 'callback'>; } | { immediate: true})
 
 export const defaultOption: Options = {
@@ -31,6 +32,7 @@ const bulkTransport = async (opts: Options) => {
         collection: collectionName,
         clientOptions,
         queueOptions,
+        onError
     } = { ...defaultOption, ...opts };
 
     const isImmediate = 'immediate' in opts && opts.immediate;
@@ -67,6 +69,7 @@ const bulkTransport = async (opts: Options) => {
                 document: log(e)
             }
         })), { forceServerObjectId: true }).catch((e) => {
+            onError?.(messages, e);
             if (e instanceof Error) {
                 errorCallback?.(e);
             }

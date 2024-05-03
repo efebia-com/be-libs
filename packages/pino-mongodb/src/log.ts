@@ -7,6 +7,10 @@ export default function(data: any) {
         if (log.time) {
             log.time = new Date(log.time);
         }
+        if (log._id) {
+            log.__id = log._id;
+            delete log._id;
+        }
     } catch (e) {
         log = {
             msg: data
