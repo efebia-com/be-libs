@@ -51,8 +51,6 @@ const defaultOptions: FastifyReplyPluginOptions = {
   }
 }
 
-
-
 export default fp<FastifyReplyPluginOptions>(
   async (fastify, opts) => {
     const finalOptions = mergeDeep(defaultOptions, opts);
@@ -65,3 +63,7 @@ export default fp<FastifyReplyPluginOptions>(
     name: '@efebia/fastify-zod-reply'
   }
 );
+
+export * from './error.js';
+export * from './route.js';
+
