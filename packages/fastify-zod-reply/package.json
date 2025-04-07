@@ -1,0 +1,21 @@
+{
+    "name": "@efebia/fastify-zod-reply",
+    "version": "0.0.1",
+    "license": "MIT",
+    "dependencies": {
+        "fastify-plugin": "^4.5.1",
+        "zod": "^3.24.2",
+        "zod-to-json-schema": "^3.24.5"
+    },
+    "files": [
+        "/lib"
+    ],
+    "scripts": {
+        "build": "tsc"
+    },
+    "main": "./lib",
+    "devDependencies": {
+        "fastify": "^4.29.0",
+        "typescript": "^5.8.3"
+    }
+}
