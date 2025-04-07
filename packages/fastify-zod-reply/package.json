@@ -3,7 +3,9 @@
     "version": "0.0.1",
     "license": "MIT",
     "dependencies": {
-        "fastify-plugin": "^5.0.1"
+        "fastify-plugin": "^4.5.1",
+        "zod": "^3.24.2",
+        "zod-to-json-schema": "^3.24.5"
     },
     "files": [
         "/lib"
@@ -13,7 +15,7 @@
     },
     "main": "./lib",
     "devDependencies": {
-        "fastify": "^5.2.2",
+        "fastify": "^4.29.0",
         "typescript": "^5.8.3"
     }
 }

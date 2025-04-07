@@ -61,7 +61,7 @@ export default fp<FastifyReplyPluginOptions>(
     })
   },
   {
-    fastify: "5.x",
+    fastify: "4.x",
     name: '@efebia/fastify-zod-reply'
   }
 );
