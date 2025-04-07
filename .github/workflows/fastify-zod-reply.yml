@@ -1,0 +1,15 @@
+name: 'Deploy @efebia/fastify-zod-reply'
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+    paths: ['packages/fastify-zod-reply/**', '.github/workflows/common-deploy.yml', '.github/workflows/fastify-zod-reply.yml']
+
+jobs:
+  publish:
+    uses: ./.github/workflows/common-deploy.yml
+    with:
+      package-name: "@efebia/fastify-zod-reply"
+      install-script: "yarn"
+    secrets: inherit
