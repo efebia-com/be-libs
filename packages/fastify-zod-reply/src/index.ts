@@ -1,6 +1,6 @@
 import fp from "fastify-plugin";
-import { createReply } from "./reply";
-import { mergeDeep } from "./utils";
+import { createReply } from "./reply.js";
+import { mergeDeep } from "./utils.js";
 
 export type StatusCode<TCode> = {
   statusCode: TCode;

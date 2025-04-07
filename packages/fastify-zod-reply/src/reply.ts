@@ -1,5 +1,5 @@
 import { FastifyReply } from "fastify";
-import { FastifyZodReplyError } from "./error";
+import { FastifyZodReplyError } from "./error.js";
 
 type ReplyFunction<T> = T extends (...args: any[]) => any
   ? (this: FastifyReply, ...args: Parameters<T>) => ReturnType<T>

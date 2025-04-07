@@ -1,21 +1,31 @@
 {
     "name": "@efebia/fastify-zod-reply",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "license": "MIT",
     "dependencies": {
         "fastify-plugin": "^4.5.1",
         "zod": "^3.24.2",
-        "zod-to-json-schema": "^3.24.5"
+        "zod-to-json-schema": "^3.24.5",
+        "fastify": "^4.29.0"
     },
     "files": [
         "/lib"
     ],
     "scripts": {
-        "build": "tsc"
+        "build:esm": "tsc --module nodenext --moduleResolution nodenext --outDir lib/esm",
+        "build:cjs": "tsc --module commonjs --moduleResolution node --outDir lib/cjs",
+        "build": "yarn build:esm && yarn build:cjs"
     },
-    "main": "./lib",
+    "main": "./lib/esm/index.js",
+    "types": "./lib/esm/index.d.ts",
+    "type": "module",
     "devDependencies": {
-        "fastify": "^4.29.0",
         "typescript": "^5.8.3"
+    },
+    "exports": {
+        ".": {
+            "require": "./lib/cjs/index.js",
+            "import": "./lib/esm/index.js"
+        }
     }
 }
