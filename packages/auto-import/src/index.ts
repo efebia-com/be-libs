@@ -15,7 +15,7 @@ const plugin = fp<Globber>(async (fastify, opts) => {
     }));
 }, {
     name: '@efebia/fastify-auto-import',
-    fastify: '4.x'
+    fastify: '5.x'
 });
 
 export default plugin;
