@@ -1319,16 +1319,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@efebia/fastify-reply@workspace:packages/fastify-reply":
-  version: 0.0.0-use.local
-  resolution: "@efebia/fastify-reply@workspace:packages/fastify-reply"
-  dependencies:
-    fastify: ^5.3.0
-    fastify-plugin: ^5.0.1
-    typescript: ^4.9.4
-  languageName: unknown
-  linkType: soft
-
 "@efebia/fastify-zod-reply@workspace:packages/fastify-zod-reply":
   version: 0.0.0-use.local
   resolution: "@efebia/fastify-zod-reply@workspace:packages/fastify-zod-reply"
