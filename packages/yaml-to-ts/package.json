@@ -1,6 +1,6 @@
 {
     "name": "@efebia/yaml-to-ts",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "Build TS interface declaration from yml file",
     "main": "lib/yaml-to-ts.js",
     "scripts": {
@@ -17,7 +17,7 @@
         "@types/node": "^17.0.23",
         "@types/prettier": "^2.6.0",
         "@types/yargs": "^17.0.10",
-        "typescript": "^4.6.3"
+        "typescript": "~5.8.3"
     },
     "files": [
         "/lib"

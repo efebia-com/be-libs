@@ -1,10 +1,10 @@
 {
     "name": "@efebia/mongoose-utils",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "license": "MIT",
     "devDependencies": {
         "@types/node": "^18.11.18",
-        "typescript": "^4.9.4"
+        "typescript": "~5.8.3"
     },
     "files": [
         "/lib"

@@ -34,7 +34,4 @@ export type EnvValues<TKeys extends [...(keyof EnvSchema)[]]> = TKeys extends [
       }
   : never;
 
-export interface EnvSchema {
-  test_key_1: string;
-  test_key_2: string;
-}
+export interface EnvSchema {}
