@@ -20,7 +20,7 @@
     "types": "./lib/esm/index.d.ts",
     "type": "module",
     "devDependencies": {
-        "typescript": "^5.8.3"
+        "typescript": "~5.8.3"
     },
     "exports": {
         ".": {
