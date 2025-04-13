@@ -1,6 +1,6 @@
 {
     "name": "@efebia/env-loader",
-    "version": "0.9.10",
+    "version": "0.9.11",
     "license": "MIT",
     "devDependencies": {
         "@types/jest": "^29.2.5",

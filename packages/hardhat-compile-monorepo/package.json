@@ -1,6 +1,6 @@
 {
     "name": "@efebia/hardhat-compile-monorepo",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "license": "MIT",
     "dependencies": {
         "glob": "^8.0.3",
