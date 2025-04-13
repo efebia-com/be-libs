@@ -84,9 +84,7 @@ const bulkTransport = async (opts: Options) => {
             messageQueue.push(chunk, callback);
         },
         destroy(err, cb) {
-            client.close((closeErr) => {
-                cb(err || closeErr || null);
-            });
+            client.close();
         }
     });
 
