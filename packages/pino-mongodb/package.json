@@ -1,6 +1,6 @@
 {
     "name": "@efebia/pino-mongodb",
-    "version": "0.0.4",
+    "version": "1.0.0",
     "license": "MIT",
     "dependencies": {
         "mongodb": "^6.15.0",

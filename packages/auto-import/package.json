@@ -1,6 +1,6 @@
 {
     "name": "@efebia/fastify-auto-import",
-    "version": "0.0.3",
+    "version": "1.0.0",
     "license": "MIT",
     "main": "./lib/index.js",
     "types": "./lib/index.d.ts",
