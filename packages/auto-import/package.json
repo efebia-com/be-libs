@@ -1,13 +1,13 @@
 {
     "name": "@efebia/fastify-auto-import",
-    "version": "0.0.3",
+    "version": "1.0.0",
     "license": "MIT",
     "main": "./lib/index.js",
     "types": "./lib/index.d.ts",
     "type": "module",
     "dependencies": {
-        "fastify": "^4.11.0",
-        "fastify-plugin": "^4.4.0",
+        "fastify": "^5.3.0",
+        "fastify-plugin": "^5.0.1",
         "pino": "^8.8.0",
         "pkg-up": "^3.1.0"
     },

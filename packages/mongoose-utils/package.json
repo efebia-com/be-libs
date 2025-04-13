@@ -1,6 +1,6 @@
 {
     "name": "@efebia/mongoose-utils",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "license": "MIT",
     "devDependencies": {
         "@types/node": "^18.11.18",
@@ -14,6 +14,6 @@
     },
     "main": "./lib",
     "dependencies": {
-        "mongoose": "^6.8.3"
+        "mongoose": "^8.13.2"
     }
 }
