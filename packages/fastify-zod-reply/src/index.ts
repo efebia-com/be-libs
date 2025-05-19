@@ -23,7 +23,7 @@ export interface FastifyStatusCode {
 
 export type FastifyReplyPluginOptions = {
   statusCodes?: {
-    [key in keyof FastifyStatusCode]: FastifyStatusCode[key]
+    [key in keyof FastifyStatusCode]?: FastifyStatusCode[key]
   }
 }
 
