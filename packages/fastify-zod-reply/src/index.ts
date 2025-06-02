@@ -66,4 +66,5 @@ export default fp<FastifyReplyPluginOptions>(
 
 export * from './error.js';
 export * from './route.js';
+export * from './routeV4.js';
 
