@@ -57,12 +57,12 @@ export const routeV4 = <
         response?: Record<number, unknown>;
         security?: any;
     } = {
-        ...(schema.Body && { body: z.toJSONSchema(schema.Body) }),
-        ...(schema.Params && { params: z.toJSONSchema(schema.Params) }),
-        ...(schema.Query && { querystring: z.toJSONSchema(schema.Query) }),
-        ...(schema.Headers && { headers: z.toJSONSchema(schema.Headers) }),
+        ...(schema.Body && { body: z.toJSONSchema(schema.Body, { reused: 'inline' }) }),
+        ...(schema.Params && { params: z.toJSONSchema(schema.Params, { reused: 'inline' }) }),
+        ...(schema.Query && { querystring: z.toJSONSchema(schema.Query, { reused: 'inline' }) }),
+        ...(schema.Headers && { headers: z.toJSONSchema(schema.Headers, { reused: 'inline' }) }),
         response: (
-            z.toJSONSchema(schema.Reply.partial()) as { properties: Record<number, unknown>}
+            z.toJSONSchema(schema.Reply.partial(), { reused: 'inline' }) as { properties: Record<number, unknown>}
         )['properties'],
         ...(schema.Security && { security: schema.Security }),
         ...(schema.Tags && { tags: schema.Tags }),

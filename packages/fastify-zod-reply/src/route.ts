@@ -56,10 +56,10 @@ export const route = <
         response?: Record<number, unknown>;
         security?: any;
     } = {
-        ...(schema.Body && { body: zodToJsonSchema(schema.Body) }),
-        ...(schema.Params && { params: zodToJsonSchema(schema.Params) }),
-        ...(schema.Query && { querystring: zodToJsonSchema(schema.Query) }),
-        ...(schema.Headers && { headers: zodToJsonSchema(schema.Headers) }),
+        ...(schema.Body && { body: zodToJsonSchema(schema.Body, { $refStrategy: 'none' }) }),
+        ...(schema.Params && { params: zodToJsonSchema(schema.Params, { $refStrategy: 'none' }) }),
+        ...(schema.Query && { querystring: zodToJsonSchema(schema.Query, { $refStrategy: 'none' }) }),
+        ...(schema.Headers && { headers: zodToJsonSchema(schema.Headers, { $refStrategy: 'none' }) }),
         response: (
             zodToJsonSchema(schema.Reply.partial(), {
                 $refStrategy: 'none',
