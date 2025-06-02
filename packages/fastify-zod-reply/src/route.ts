@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from 'zod';
 import { zodToJsonSchema, type JsonSchema7ObjectType } from 'zod-to-json-schema';
-import { APIHandler, APIOptions, RouteSecurity, RouteTag } from './types';
+import { APIHandler, APIOptions, RouteSecurity, RouteTag } from './types.js';
 
 const mapZodError = (zodError: z.ZodError, prefix: string) =>
     zodError.errors.map(issue => `Error at ${prefix}->${issue.path.join('->')}`).join(';\n');

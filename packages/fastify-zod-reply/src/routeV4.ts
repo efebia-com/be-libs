@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from 'zod/v4';
-import { APIHandler, APIOptions, RouteSecurity, RouteTag } from './types';
+import { APIHandler, APIOptions, RouteSecurity, RouteTag } from './types.js';
 
 
 const mapZodError = (zodError: z.ZodError, prefix: string) =>
