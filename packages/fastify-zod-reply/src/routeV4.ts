@@ -1,26 +1,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { z } from 'zod';
-import { zodToJsonSchema, type JsonSchema7ObjectType } from 'zod-to-json-schema';
+import { z } from 'zod/v4';
 import { APIHandler, APIOptions, RouteSecurity, RouteTag } from './types';
 
-const mapZodError = (zodError: z.ZodError, prefix: string) =>
-    zodError.errors.map(issue => `Error at ${prefix}->${issue.path.join('->')}`).join(';\n');
 
-export type BaseZodSchema = {
+const mapZodError = (zodError: z.ZodError, prefix: string) =>
+    zodError.issues.map(issue => `Error at ${prefix}->${issue.path.join('->')}`).join(';\n');
+
+export type BaseZodV4Schema = {
     Body?: z.ZodTypeAny;
     Params?: z.ZodTypeAny;
     Query?: z.ZodTypeAny;
     Headers?: z.ZodTypeAny;
-    Reply: z.AnyZodObject;
+    Reply: z.ZodObject;
     Security?: (RouteSecurity[keyof RouteSecurity])[];
     Tags?: (keyof RouteTag)[];
 };
-export type FastifyZodSchema<TZodSchema extends BaseZodSchema> = {
+export type FastifyZodV4Schema<TZodSchema extends BaseZodV4Schema> = {
     Body: TZodSchema['Body'] extends z.ZodTypeAny ? z.output<TZodSchema['Body']> : undefined;
     Params: TZodSchema['Params'] extends z.ZodTypeAny ? z.output<TZodSchema['Params']> : undefined;
     Querystring: TZodSchema['Query'] extends z.ZodTypeAny ? z.output<TZodSchema['Query']> : undefined;
     Reply: TZodSchema['Reply'] extends z.ZodTypeAny
-        ? z.input<TZodSchema['Reply']>[keyof z.infer<TZodSchema['Reply']>]
+        ? z.input<TZodSchema['Reply']>[keyof z.input<TZodSchema['Reply']>]
         : undefined;
 };
 
@@ -41,13 +41,14 @@ const findStatusCode = (statusCode: number, availableStatusCodes: ([(string | nu
     })
 }
 
-export const route = <
-    TSchema extends BaseZodSchema,
-    FastifySchema extends FastifyZodSchema<TSchema> = FastifyZodSchema<TSchema>,
+export const routeV4 = <
+    TSchema extends BaseZodV4Schema,
+    FastifySchema extends FastifyZodV4Schema<TSchema> = FastifyZodV4Schema<TSchema>,
 >(
     schema: TSchema,
     handler: APIHandler<FastifySchema>
 ): APIOptions<FastifySchema> & { handler: APIHandler<FastifySchema> } => {
+
     const finalResult: {
         body?: Record<string, unknown>;
         params?: Record<string, unknown>;
@@ -56,15 +57,12 @@ export const route = <
         response?: Record<number, unknown>;
         security?: any;
     } = {
-        ...(schema.Body && { body: zodToJsonSchema(schema.Body, { $refStrategy: 'none' }) }),
-        ...(schema.Params && { params: zodToJsonSchema(schema.Params, { $refStrategy: 'none' }) }),
-        ...(schema.Query && { querystring: zodToJsonSchema(schema.Query, { $refStrategy: 'none' }) }),
-        ...(schema.Headers && { headers: zodToJsonSchema(schema.Headers, { $refStrategy: 'none' }) }),
+        ...(schema.Body && { body: z.toJSONSchema(schema.Body, { reused: 'inline' }) }),
+        ...(schema.Params && { params: z.toJSONSchema(schema.Params, { reused: 'inline' }) }),
+        ...(schema.Query && { querystring: z.toJSONSchema(schema.Query, { reused: 'inline' }) }),
+        ...(schema.Headers && { headers: z.toJSONSchema(schema.Headers, { reused: 'inline' }) }),
         response: (
-            zodToJsonSchema(schema.Reply.partial(), {
-                $refStrategy: 'none',
-                strictUnions: true,
-            }) as JsonSchema7ObjectType
+            z.toJSONSchema(schema.Reply.partial(), { reused: 'inline' }) as { properties: Record<number, unknown>}
         )['properties'],
         ...(schema.Security && { security: schema.Security }),
         ...(schema.Tags && { tags: schema.Tags }),
@@ -101,7 +99,7 @@ export const route = <
                 request.log.warn(`[@efebia/fastify-zod-reply]: Reply schema of: ${request.routeOptions.url} does not have the specified status code: ${reply.statusCode}`)
                 return done(null, payload);
             }
-            const serialized = (foundSchema[1] as z.AnyZodObject).safeParse(payload);
+            const serialized = (foundSchema[1] as z.ZodObject).safeParse(payload);
             if (serialized.success) {
                 return done(null, serialized.data);
             }

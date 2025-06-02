@@ -1326,7 +1326,7 @@ __metadata:
     fastify: ^5.3.0
     fastify-plugin: ^5.0.1
     typescript: ~5.8.3
-    zod: ^3.24.2
+    zod: ^3.25.47
     zod-to-json-schema: ^3.24.5
   languageName: unknown
   linkType: soft
@@ -7885,9 +7885,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.24.2":
-  version: 3.24.2
-  resolution: "zod@npm:3.24.2"
-  checksum: c02455c09678c5055c636d64f9fcda2424fea0aa46ac7d9681e7f41990bc55f488bcd84b9d7cfef0f6e906f51f55b245239d92a9f726248aa74c5b84edf00c2d
+"zod@npm:^3.25.47":
+  version: 3.25.47
+  resolution: "zod@npm:3.25.47"
+  checksum: 7c3d383454159050497966401d7c73ad840515b5525a8bf80b7daf07469ddac73537d4c43c29e1837a7502e2e538af6f39a3ccaebb99a55c3375d89216286fcc
   languageName: node
   linkType: hard
