@@ -57,12 +57,12 @@ export const routeV4 = <
         response?: Record<number, unknown>;
         security?: any;
     } = {
-        ...(schema.Body && { body: z.toJSONSchema(schema.Body, { reused: 'inline' }) }),
-        ...(schema.Params && { params: z.toJSONSchema(schema.Params, { reused: 'inline' }) }),
-        ...(schema.Query && { querystring: z.toJSONSchema(schema.Query, { reused: 'inline' }) }),
-        ...(schema.Headers && { headers: z.toJSONSchema(schema.Headers, { reused: 'inline' }) }),
+        ...(schema.Body && { body: z.toJSONSchema(schema.Body, { reused: 'inline', target: "draft-7" }) }),
+        ...(schema.Params && { params: z.toJSONSchema(schema.Params, { reused: 'inline', target: "draft-7" }) }),
+        ...(schema.Query && { querystring: z.toJSONSchema(schema.Query, { reused: 'inline', target: "draft-7" }) }),
+        ...(schema.Headers && { headers: z.toJSONSchema(schema.Headers, { reused: 'inline', target: "draft-7" }) }),
         response: (
-            z.toJSONSchema(schema.Reply.partial(), { reused: 'inline' }) as { properties: Record<number, unknown>}
+            z.toJSONSchema(schema.Reply.partial(), { reused: 'inline', target: "draft-7" }) as { properties: Record<number, unknown>}
         )['properties'],
         ...(schema.Security && { security: schema.Security }),
         ...(schema.Tags && { tags: schema.Tags }),
