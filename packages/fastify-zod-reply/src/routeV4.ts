@@ -3,8 +3,12 @@ import { z } from 'zod/v4';
 import { APIHandler, APIOptions, RouteSecurity, RouteTag } from './types.js';
 
 
-const mapZodError = (zodError: z.ZodError, prefix: string) =>
-    zodError.issues.map(issue => `Error at ${prefix}->${issue.path.join('->')}`).join(';\n');
+const mapZodError = (zodError, prefix) => {
+    return zodError.issues.map(issue => {
+        const pathStr = `Error at ${prefix}->${issue.path.join('->')}`;
+        return issue.message ? `${pathStr}->${issue.message}` : pathStr;
+    }).join('\n');
+};
 
 export type BaseZodV4Schema = {
     Body?: z.ZodTypeAny;
