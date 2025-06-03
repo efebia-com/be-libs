@@ -1,6 +1,6 @@
 {
     "name": "@efebia/fastify-zod-reply",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "license": "MIT",
     "dependencies": {
         "fastify": "^5.3.0",

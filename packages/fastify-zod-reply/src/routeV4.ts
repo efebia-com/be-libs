@@ -57,10 +57,10 @@ export const routeV4 = <
         response?: Record<number, unknown>;
         security?: any;
     } = {
-        ...(schema.Body && { body: z.toJSONSchema(schema.Body, { reused: 'inline', target: "draft-7" }) }),
-        ...(schema.Params && { params: z.toJSONSchema(schema.Params, { reused: 'inline', target: "draft-7" }) }),
-        ...(schema.Query && { querystring: z.toJSONSchema(schema.Query, { reused: 'inline', target: "draft-7" }) }),
-        ...(schema.Headers && { headers: z.toJSONSchema(schema.Headers, { reused: 'inline', target: "draft-7" }) }),
+        ...(schema.Body && { body: z.toJSONSchema(schema.Body, { reused: 'inline', target: "draft-7", io: 'input' }) }),
+        ...(schema.Params && { params: z.toJSONSchema(schema.Params, { reused: 'inline', target: "draft-7", io: 'input' }) }),
+        ...(schema.Query && { querystring: z.toJSONSchema(schema.Query, { reused: 'inline', target: "draft-7", io: 'input' }) }),
+        ...(schema.Headers && { headers: z.toJSONSchema(schema.Headers, { reused: 'inline', target: "draft-7", io: 'input' }) }),
         response: (
             z.toJSONSchema(schema.Reply.partial(), { reused: 'inline', target: "draft-7" }) as { properties: Record<number, unknown>}
         )['properties'],
