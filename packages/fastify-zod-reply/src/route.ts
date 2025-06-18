@@ -72,7 +72,7 @@ export const createRoute = ({ strict: globalStrict = false }: RouteOptions = {})
      */
     options?: RouteOptions
 ): APIOptions<FastifySchema> & { handler: APIHandler<FastifySchema> } => {
-        const strict = typeof options?.strict !== 'undefined' ? options?.strict : globalStrict
+    const strict = typeof options?.strict !== 'undefined' ? options?.strict : globalStrict
 
     const finalResult: {
         body?: Record<string, unknown>;
@@ -82,10 +82,10 @@ export const createRoute = ({ strict: globalStrict = false }: RouteOptions = {})
         response?: Record<number, unknown>;
         security?: any;
     } = {
-        ...(schema.Body && { body: zodToJsonSchema(strictifySchema(schema.Body, parseStrict('body', strict)), { $refStrategy: 'none' }) }),
-        ...(schema.Params && { params: zodToJsonSchema(strictifySchema(schema.Params, parseStrict('params', strict)), { $refStrategy: 'none' }) }),
-        ...(schema.Query && { querystring: zodToJsonSchema(strictifySchema(schema.Query, parseStrict('query', strict)), { $refStrategy: 'none' }) }),
-        ...(schema.Headers && { headers: zodToJsonSchema(strictifySchema(schema.Headers, parseStrict('headers', strict)), { $refStrategy: 'none' }) }),
+        ...(schema.Body && { body: zodToJsonSchema(strictifySchema(schema.Body, parseStrict('body', strict)), { $refStrategy: 'none', removeAdditionalStrategy: 'strict', allowedAdditionalProperties: undefined }) }),
+        ...(schema.Params && { params: zodToJsonSchema(strictifySchema(schema.Params, parseStrict('params', strict)), { $refStrategy: 'none', removeAdditionalStrategy: 'strict', allowedAdditionalProperties: undefined }) }),
+        ...(schema.Query && { querystring: zodToJsonSchema(strictifySchema(schema.Query, parseStrict('query', strict)), { $refStrategy: 'none', removeAdditionalStrategy: 'strict', allowedAdditionalProperties: undefined }) }),
+        ...(schema.Headers && { headers: zodToJsonSchema(strictifySchema(schema.Headers, parseStrict('headers', strict)), { $refStrategy: 'none', removeAdditionalStrategy: 'strict', allowedAdditionalProperties: undefined }) }),
         response: (
             zodToJsonSchema(schema.Reply.partial(), {
                 $refStrategy: 'none',

@@ -21,6 +21,7 @@
     "types": "./lib/esm/index.d.ts",
     "type": "module",
     "devDependencies": {
+        "@types/node": "22",
         "tsx": "^4.20.3",
         "typescript": "~5.8.3"
     },
