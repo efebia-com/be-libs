@@ -26,7 +26,7 @@ describe("route", () => {
   it("should fail if you send a 204 with content", async () => {
     const app = fastify();
     await app.register(responsesPlugin, { statusCodes: { noContent: { payload: undefined, statusCode: 204 } } });
-    
+
     app.get(
       "/",
       //@ts-ignore
@@ -59,7 +59,7 @@ describe("route", () => {
     assert.deepStrictEqual(response.json(), { id: "test" });
     assert.equal(response.headers["content-type"], "application/json; charset=utf-8");
   });
-describe("strict", () => {
+  describe("strict", () => {
     const exampleSchema = z.object({ id: z.string() });
     it("strict true local mode should add additionalProperties: false", () => {
       const value = route(
