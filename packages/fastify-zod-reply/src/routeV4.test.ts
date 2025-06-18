@@ -2,7 +2,7 @@ import assert from "assert"
 import fastify from "fastify"
 import { describe, it } from "node:test"
 import z from "zod/v4"
-import responsesPlugin from "."
+import responsesPlugin from "./index"
 import { routeV4 } from "./routeV4"
 
 describe('routeV4', () => {

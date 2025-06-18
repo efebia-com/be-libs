@@ -12,8 +12,8 @@
         "/lib"
     ],
     "scripts": {
-        "build:esm": "tsc --module nodenext --moduleResolution nodenext --outDir lib/esm",
-        "build:cjs": "tsc --module commonjs --moduleResolution node --outDir lib/cjs",
+        "build:esm": "tsc -p ./tsconfig.build.json --module nodenext --moduleResolution nodenext --outDir lib/esm",
+        "build:cjs": "tsc -p ./tsconfig.build.json --module commonjs --moduleResolution node --outDir lib/cjs",
         "build": "yarn build:esm && yarn build:cjs",
         "test": "node --import tsx --test ./**/*.test.ts"
     },
