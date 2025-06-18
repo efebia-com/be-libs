@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from 'zod';
 import { zodToJsonSchema, type JsonSchema7ObjectType } from 'zod-to-json-schema';
-import { RouteV4Options } from './routeV4.js';
 import { APIHandler, APIOptions, RouteSecurity, RouteTag } from './types.js';
 
 const mapZodError = (zodError: z.ZodError, prefix: string) =>
@@ -62,7 +61,7 @@ const parseStrict = (tag: keyof Exclude<NonNullable<RouteOptions['strict']>, boo
     return value[tag]
 }
 
-export const createRoute = ({ strict: globalStrict = false }: RouteV4Options = {}) => <
+export const createRoute = ({ strict: globalStrict = false }: RouteOptions = {}) => <
     TSchema extends BaseZodSchema,
     FastifySchema extends FastifyZodSchema<TSchema> = FastifyZodSchema<TSchema>,
 >(
@@ -71,7 +70,7 @@ export const createRoute = ({ strict: globalStrict = false }: RouteV4Options = {
     /**
      * If set, these options will override the global route options
      */
-    options?: RouteV4Options
+    options?: RouteOptions
 ): APIOptions<FastifySchema> & { handler: APIHandler<FastifySchema> } => {
         const strict = typeof options?.strict !== 'undefined' ? options?.strict : globalStrict
 
