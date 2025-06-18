@@ -13,7 +13,7 @@ export const createReply = (
     const finalPayload = payload ?? defaultPayload;
     if (typeof finalPayload === 'string')
       throw createError(statusCode)(finalPayload);
-    this.type("application/json");
+    if (typeof finalPayload !== 'undefined') this.type("application/json");
     this.code(statusCode);
     return finalPayload
   };
