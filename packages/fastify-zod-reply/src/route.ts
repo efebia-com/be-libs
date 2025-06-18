@@ -41,13 +41,39 @@ const findStatusCode = (statusCode: number, availableStatusCodes: ([(string | nu
     })
 }
 
-export const route = <
+export type RouteOptions = {
+    /**
+     * Set strict mode.
+     * If true, it applies to body, query, params and headers.
+     * If an object is passed, you can make it more granular
+     */
+    strict?: boolean | { body: boolean; query: boolean; params: boolean; headers: boolean }
+}
+
+const strictifySchema = (schema: z.ZodType, strict: boolean) => {
+    if (!strict) return schema
+    return 'strict' in schema && typeof schema['strict'] === 'function' ? schema.strict() : schema
+}
+
+
+const parseStrict = (tag: keyof Exclude<NonNullable<RouteOptions['strict']>, boolean>, value: NonNullable<RouteOptions['strict']>) => {
+    if (typeof value === 'boolean') return value
+    return value[tag]
+}
+
+export const createRoute = ({ strict: globalStrict = false }: RouteOptions = {}) => <
     TSchema extends BaseZodSchema,
     FastifySchema extends FastifyZodSchema<TSchema> = FastifyZodSchema<TSchema>,
 >(
     schema: TSchema,
-    handler: APIHandler<FastifySchema>
+    handler: APIHandler<FastifySchema>,
+    /**
+     * If set, these options will override the global route options
+     */
+    options?: RouteOptions
 ): APIOptions<FastifySchema> & { handler: APIHandler<FastifySchema> } => {
+    const strict = typeof options?.strict !== 'undefined' ? options?.strict : globalStrict
+
     const finalResult: {
         body?: Record<string, unknown>;
         params?: Record<string, unknown>;
@@ -56,10 +82,10 @@ export const route = <
         response?: Record<number, unknown>;
         security?: any;
     } = {
-        ...(schema.Body && { body: zodToJsonSchema(schema.Body, { $refStrategy: 'none' }) }),
-        ...(schema.Params && { params: zodToJsonSchema(schema.Params, { $refStrategy: 'none' }) }),
-        ...(schema.Query && { querystring: zodToJsonSchema(schema.Query, { $refStrategy: 'none' }) }),
-        ...(schema.Headers && { headers: zodToJsonSchema(schema.Headers, { $refStrategy: 'none' }) }),
+        ...(schema.Body && { body: zodToJsonSchema(strictifySchema(schema.Body, parseStrict('body', strict)), { $refStrategy: 'none', removeAdditionalStrategy: 'strict', allowedAdditionalProperties: undefined }) }),
+        ...(schema.Params && { params: zodToJsonSchema(strictifySchema(schema.Params, parseStrict('params', strict)), { $refStrategy: 'none', removeAdditionalStrategy: 'strict', allowedAdditionalProperties: undefined }) }),
+        ...(schema.Query && { querystring: zodToJsonSchema(strictifySchema(schema.Query, parseStrict('query', strict)), { $refStrategy: 'none', removeAdditionalStrategy: 'strict', allowedAdditionalProperties: undefined }) }),
+        ...(schema.Headers && { headers: zodToJsonSchema(strictifySchema(schema.Headers, parseStrict('headers', strict)), { $refStrategy: 'none', removeAdditionalStrategy: 'strict', allowedAdditionalProperties: undefined }) }),
         response: (
             zodToJsonSchema(schema.Reply.partial(), {
                 $refStrategy: 'none',
@@ -108,4 +134,6 @@ export const route = <
             return done(new Error(mapZodError(serialized.error, 'reply')));
         },
     };
-};
+}
+
+export const route = createRoute({ strict: false })

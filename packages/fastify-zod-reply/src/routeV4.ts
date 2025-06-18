@@ -45,14 +45,38 @@ const findStatusCode = (statusCode: number, availableStatusCodes: ([(string | nu
     })
 }
 
-export const routeV4 = <
+export type RouteV4Options = {
+    /**
+     * Set strict mode.
+     * If true, it applies to body, query, params and headers.
+     * If an object is passed, you can make it more granular
+     */
+    strict?: boolean | { body: boolean; query: boolean; params: boolean; headers: boolean }
+}
+
+const strictifySchema = (schema: z.ZodType, strict: boolean) => {
+    if (!strict) return schema
+    return 'strict' in schema && typeof schema['strict'] === 'function' ? schema.strict() : schema
+}
+
+
+const parseStrict = (tag: keyof Exclude<NonNullable<RouteV4Options['strict']>, boolean>, value: NonNullable<RouteV4Options['strict']>) => {
+    if (typeof value === 'boolean') return value
+    return value[tag]
+}
+
+export const createRouteV4 = ({ strict: globalStrict = false }: RouteV4Options = {}) => <
     TSchema extends BaseZodV4Schema,
     FastifySchema extends FastifyZodV4Schema<TSchema> = FastifyZodV4Schema<TSchema>,
 >(
     schema: TSchema,
-    handler: APIHandler<FastifySchema>
+    handler: APIHandler<FastifySchema>,
+    /**
+     * If set, these options will override the global route options
+     */
+    options?: RouteV4Options
 ): APIOptions<FastifySchema> & { handler: APIHandler<FastifySchema> } => {
-
+    const strict = typeof options?.strict !== 'undefined' ? options?.strict : globalStrict
     const finalResult: {
         body?: Record<string, unknown>;
         params?: Record<string, unknown>;
@@ -61,10 +85,10 @@ export const routeV4 = <
         response?: Record<number, unknown>;
         security?: any;
     } = {
-        ...(schema.Body && { body: z.toJSONSchema(schema.Body, { reused: 'inline', target: "draft-7", io: 'input' }) }),
-        ...(schema.Params && { params: z.toJSONSchema(schema.Params, { reused: 'inline', target: "draft-7", io: 'input' }) }),
-        ...(schema.Query && { querystring: z.toJSONSchema(schema.Query, { reused: 'inline', target: "draft-7", io: 'input' }) }),
-        ...(schema.Headers && { headers: z.toJSONSchema(schema.Headers, { reused: 'inline', target: "draft-7", io: 'input' }) }),
+        ...(schema.Body && { body: z.toJSONSchema(strictifySchema(schema.Body, parseStrict('body', strict)), { reused: 'inline', target: "draft-7", io: 'input' }) }),
+        ...(schema.Params && { params: z.toJSONSchema(strictifySchema(schema.Params, parseStrict('params', strict)), { reused: 'inline', target: "draft-7", io: 'input' }) }),
+        ...(schema.Query && { querystring: z.toJSONSchema(strictifySchema(schema.Query, parseStrict('query', strict)), { reused: 'inline', target: "draft-7", io: 'input' }) }),
+        ...(schema.Headers && { headers: z.toJSONSchema(strictifySchema(schema.Headers, parseStrict('headers', strict)), { reused: 'inline', target: "draft-7", io: 'input' }) }),
         response: (
             z.toJSONSchema(schema.Reply.partial(), { reused: 'inline', target: "draft-7" }) as { properties: Record<number, unknown>}
         )['properties'],
@@ -110,4 +134,6 @@ export const routeV4 = <
             return done(new Error(mapZodError(serialized.error, 'reply')));
         },
     };
-};
+}
+
+export const routeV4 = createRouteV4({ strict: false });
