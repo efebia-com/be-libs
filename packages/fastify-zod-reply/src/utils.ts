@@ -1,4 +1,4 @@
-import { StatusCodeKey } from "./types";
+import { StatusCodeKey } from "./types.js";
 
 export function isObject(item: any) {
   return item && typeof item === "object" && !Array.isArray(item);
