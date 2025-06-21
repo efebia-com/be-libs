@@ -2,7 +2,7 @@ import assert from "assert";
 import fastify from "fastify";
 import { describe, it } from "node:test";
 import z from "zod";
-import plugin, { StatusCodeBuilder } from "./plugin";
+import { plugin, StatusCodeBuilder } from "./plugin";
 import { createRoute, route } from "./route";
 
 describe("route", () => {
