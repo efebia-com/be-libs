@@ -2,13 +2,13 @@ import assert from "assert";
 import fastify from "fastify";
 import { describe, it } from "node:test";
 import z from "zod";
-import responsesPlugin from ".";
+import plugin, { StatusCodeBuilder } from "./plugin";
 import { createRoute, route } from "./route";
 
 describe("route", () => {
   it("should be able to return a 204 without any content", async () => {
     const app = fastify();
-    await app.register(responsesPlugin, { statusCodes: { noContent: { payload: undefined, statusCode: 204 } } });
+    await app.register(plugin, { statusCodes: new StatusCodeBuilder().set('noContent', { schema: z.undefined(), payload: undefined }) });
     app.get(
       "/",
       route({ Reply: z.object({ 204: z.undefined() }) }, async (req, reply) => {
@@ -25,7 +25,7 @@ describe("route", () => {
   });
   it("should fail if you send a 204 with content", async () => {
     const app = fastify();
-    await app.register(responsesPlugin, { statusCodes: { noContent: { payload: undefined, statusCode: 204 } } });
+    await app.register(plugin, { statusCodes: new StatusCodeBuilder().set('noContent', { schema: z.undefined(), payload: undefined }) });
 
     app.get(
       "/",
@@ -43,7 +43,7 @@ describe("route", () => {
   });
   it("should be able to return a 200 with content", async () => {
     const app = fastify();
-    await app.register(responsesPlugin, { statusCodes: { noContent: { payload: undefined, statusCode: 204 } } });
+    await app.register(plugin, { statusCodes: new StatusCodeBuilder().set('noContent', { schema: z.undefined(), payload: undefined }) });
     app.get(
       "/",
       route({ Reply: z.object({ 200: z.object({ id: z.string() }) }) }, async (req, reply) => {

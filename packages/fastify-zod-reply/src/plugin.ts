@@ -1,5 +1,5 @@
 import fp from "fastify-plugin";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { createReply } from "./reply.js";
 import { StatusCodeKey } from "./types.js";
 import { statusByText } from "./utils.js";
@@ -54,7 +54,7 @@ const defaultOptions: FastifyReplyPluginOptions = {
 /**
  * Example on how to use it:
  * fastify.register(plugin, {
- *  statusCodes: new StatusCodeV4Builder().set('ok', 200, z.object({ message: z.string(), additionalProp1: z.string() }), { message: 'ok', additionalProp1: 'test' })
+ *  statusCodes: new StatusCodeBuilder().set('ok', 200, z.object({ message: z.string(), additionalProp1: z.string() }), { message: 'ok', additionalProp1: 'test' })
  * })
  * This will use the defaults, but sets `ok` with the new schema
  */
