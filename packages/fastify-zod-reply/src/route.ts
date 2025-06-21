@@ -1,10 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from 'zod';
 import { zodToJsonSchema, type JsonSchema7ObjectType } from 'zod-to-json-schema';
+import { FastifyZodReplyError } from './error.js';
 import { APIHandler, APIOptions, RouteSecurity, RouteTag } from './types.js';
 
-const mapZodError = (zodError: z.ZodError, prefix: string) =>
-    zodError.errors.map(issue => `Error at ${prefix}->${issue.path.join('->')}`).join(';\n');
+const mapZodError = (zodError: z.ZodError, prefix: string) => {
+    return zodError.issues.map(issue => {
+        const pathStr = `Error at ${prefix}->${issue.path.join('->')}`;
+        return issue.message ? `${pathStr}->${issue.message}` : pathStr;
+    }).join('\n');
+};
 
 export type BaseZodSchema = {
     Body?: z.ZodTypeAny;
@@ -122,16 +127,20 @@ export const createRoute = ({ strict: globalStrict = false }: RouteOptions = {})
             request.query = (results.find(r => r.tag === 'query') as any)?.data || {};
         },
         preSerialization: (request, reply, payload, done) => {
-            const foundSchema = findStatusCode(reply.statusCode, Object.entries(schema.Reply.shape))
+            const foundLocalSchema = findStatusCode(reply.statusCode, Object.entries(schema.Reply.shape))
+            const foundGlobalSchema = reply[`SCHEMA_${reply.statusCode}`]
+const foundSchema = foundLocalSchema?.[1] ?? foundGlobalSchema
             if (!foundSchema) {
-                request.log.warn(`[@efebia/fastify-zod-reply]: Reply schema of: ${request.routeOptions.url} does not have the specified status code: ${reply.statusCode}`)
-                return done(null, payload);
+                request.log.error(`[@efebia/fastify-zod-reply]: Reply schema of: ${request.routeOptions.url} does not have the specified status code: ${reply.statusCode} nor there is a global schema for this status code.`)
+                reply.code(500 as any)
+                return done(new FastifyZodReplyError(`Reply schema of: ${request.routeOptions.url} does not have the specified status code: ${reply.statusCode} nor there is a global schema for this status code.`, 500));
             }
-            const serialized = (foundSchema[1] as z.AnyZodObject).safeParse(payload);
+            const serialized = (foundSchema as z.ZodType).safeParse(payload);
             if (serialized.success) {
                 return done(null, serialized.data);
             }
-            return done(new Error(mapZodError(serialized.error, 'reply')));
+            reply.code(500 as any)
+            return done(new FastifyZodReplyError(mapZodError(serialized.error, 'reply'), 500));
         },
     };
 }

@@ -52,9 +52,10 @@ const defaultOptions: FastifyReplyV4PluginOptions = {
 };
 
 /**
+ * Register plugin to use only with `routeV4`
  * Example on how to use it:
  * fastify.register(plugin, {
- *  statusCodes: new StatusCodeV4Builder().set('ok', 200, z.object({ message: z.string(), additionalProp1: z.string() }), { message: 'ok', additionalProp1: 'test' })
+ *  statusCodes: new StatusCodeV4Builder().set('ok', z.object({ message: z.string(), additionalProp1: z.string() }), { message: 'ok', additionalProp1: 'test' })
  * })
  * This will use the defaults, but sets `ok` with the new schema
  */
@@ -68,6 +69,11 @@ export default fp<FastifyReplyV4PluginOptions>(
     };
     Object.entries(finalOptions.statusCodes?.obj || {}).forEach(([key, value]: [key: string, value: StatusCodeV4<any>]) => {
       fastify.decorateReply(key, createReply(value.statusCode, value.payload));
+      fastify.decorateReply(`SCHEMA_${value.statusCode}`, {
+        getter() {
+            return value.schema
+        }
+      });
     });
   },
   {

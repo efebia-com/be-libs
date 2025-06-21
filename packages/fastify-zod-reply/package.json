@@ -15,7 +15,8 @@
         "build:esm": "tsc -p ./tsconfig.build.json --module nodenext --moduleResolution nodenext --outDir lib/esm",
         "build:cjs": "tsc -p ./tsconfig.build.json --module commonjs --moduleResolution node --outDir lib/cjs",
         "build": "yarn build:esm && yarn build:cjs",
-        "test": "node --import tsx --test ./**/*.test.ts"
+        "test": "node --import tsx --test ./**/*.test.ts",
+        "test:single": "node --import tsx --test"
     },
     "main": "./lib/esm/index.js",
     "types": "./lib/esm/index.d.ts",

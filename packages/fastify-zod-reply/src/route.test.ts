@@ -59,6 +59,41 @@ describe("route", () => {
     assert.deepStrictEqual(response.json(), { id: "test" });
     assert.equal(response.headers["content-type"], "application/json; charset=utf-8");
   });
+  it("should be able to use global schema if no schema is defined in response", async () => {
+    const app = fastify();
+    await app.register(plugin);
+    app.get(
+      "/",
+      //@ts-ignore
+      route({ Reply: z.object({ 200: z.object({ id: z.string() }) }) }, async (req, reply) => {
+        return reply.forbidden({ message: "test" });
+      })
+    );
+    const response = await app.inject({
+      method: "GET",
+      url: "/",
+    });
+
+    assert.deepStrictEqual(response.json(), { message: "test" });
+    assert.equal(response.headers["content-type"], "application/json; charset=utf-8");
+  });
+  it("should throw if not matching global schema if no schema is defined in response", async () => {
+    const app = fastify();
+    await app.register(plugin);
+    app.get(
+      "/",
+      //@ts-ignore
+      route({ Reply: z.object({ 200: z.object({ id: z.string() }) }) }, async (req, reply) => {
+        return reply.forbidden({ test: "test" });
+      })
+    );
+    const response = await app.inject({
+      method: "GET",
+      url: "/",
+    });
+    assert.deepStrictEqual(response.json(), { statusCode: 500, error: 'Internal Server Error', message: 'Error at reply->message->Required' });
+    assert.equal(response.headers["content-type"], "application/json; charset=utf-8");
+  });
   describe("strict", () => {
     const exampleSchema = z.object({ id: z.string() });
     it("strict true local mode should add additionalProperties: false", () => {
