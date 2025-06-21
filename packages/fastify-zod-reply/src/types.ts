@@ -23,3 +23,5 @@ export type APIHandler<RouteInterface extends RouteGenericInterface = RouteGener
 
 export interface RouteTag {}
 export interface RouteSecurity {}
+
+export type StatusCodeKey = 'ok' | 'created' | 'accepted' | 'noContent' | 'badRequest' | 'unauthorized' | 'forbidden' | 'notFound' | 'notAcceptable' | 'conflict' | 'internalServerError'
