@@ -1,3 +1,4 @@
+import { plugin, type FastifyReplyPluginOptions, type StatusCode, type StatusCodeBuilder } from './plugin.js';
 import { StatusCodeKey } from './types.js';
 
 
@@ -10,9 +11,10 @@ declare module 'fastify' {
 }
 
 export * from './error.js';
-export * from './plugin.js';
 export * from './pluginV4.js';
 export * from './route.js';
 export * from './routeV4.js';
 export * from './types.js';
+export { type FastifyReplyPluginOptions, type StatusCode, type StatusCodeBuilder };
+export default plugin
 
