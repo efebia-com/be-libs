@@ -2,13 +2,13 @@ import assert from "assert";
 import fastify from "fastify";
 import { describe, it } from "node:test";
 import z from "zod";
-import responsesPlugin from ".";
+import plugin, { StatusCodeBuilder } from "./plugin";
 import { createRoute, route } from "./route";
 
 describe("route", () => {
   it("should be able to return a 204 without any content", async () => {
     const app = fastify();
-    await app.register(responsesPlugin, { statusCodes: { noContent: { payload: undefined, statusCode: 204 } } });
+    await app.register(plugin, { statusCodes: new StatusCodeBuilder().set('noContent', { schema: z.undefined(), payload: undefined }) });
     app.get(
       "/",
       route({ Reply: z.object({ 204: z.undefined() }) }, async (req, reply) => {
@@ -25,7 +25,7 @@ describe("route", () => {
   });
   it("should fail if you send a 204 with content", async () => {
     const app = fastify();
-    await app.register(responsesPlugin, { statusCodes: { noContent: { payload: undefined, statusCode: 204 } } });
+    await app.register(plugin, { statusCodes: new StatusCodeBuilder().set('noContent', { schema: z.undefined(), payload: undefined }) });
 
     app.get(
       "/",
@@ -43,7 +43,7 @@ describe("route", () => {
   });
   it("should be able to return a 200 with content", async () => {
     const app = fastify();
-    await app.register(responsesPlugin, { statusCodes: { noContent: { payload: undefined, statusCode: 204 } } });
+    await app.register(plugin, { statusCodes: new StatusCodeBuilder().set('noContent', { schema: z.undefined(), payload: undefined }) });
     app.get(
       "/",
       route({ Reply: z.object({ 200: z.object({ id: z.string() }) }) }, async (req, reply) => {
@@ -57,6 +57,41 @@ describe("route", () => {
 
     assert.equal(response.body, JSON.stringify({ id: "test" }));
     assert.deepStrictEqual(response.json(), { id: "test" });
+    assert.equal(response.headers["content-type"], "application/json; charset=utf-8");
+  });
+  it("should be able to use global schema if no schema is defined in response", async () => {
+    const app = fastify();
+    await app.register(plugin);
+    app.get(
+      "/",
+      //@ts-ignore
+      route({ Reply: z.object({ 200: z.object({ id: z.string() }) }) }, async (req, reply) => {
+        return reply.forbidden({ message: "test" });
+      })
+    );
+    const response = await app.inject({
+      method: "GET",
+      url: "/",
+    });
+
+    assert.deepStrictEqual(response.json(), { message: "test" });
+    assert.equal(response.headers["content-type"], "application/json; charset=utf-8");
+  });
+  it("should throw if not matching global schema if no schema is defined in response", async () => {
+    const app = fastify();
+    await app.register(plugin);
+    app.get(
+      "/",
+      //@ts-ignore
+      route({ Reply: z.object({ 200: z.object({ id: z.string() }) }) }, async (req, reply) => {
+        return reply.forbidden({ test: "test" });
+      })
+    );
+    const response = await app.inject({
+      method: "GET",
+      url: "/",
+    });
+    assert.deepStrictEqual(response.json(), { statusCode: 500, error: 'Internal Server Error', message: 'Error at reply->message->Required' });
     assert.equal(response.headers["content-type"], "application/json; charset=utf-8");
   });
   describe("strict", () => {
