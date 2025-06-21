@@ -59,6 +59,44 @@ describe("route", () => {
     assert.deepStrictEqual(response.json(), { id: "test" });
     assert.equal(response.headers["content-type"], "application/json; charset=utf-8");
   });
+  it("should throw an error if returning 200 but it is not in response schema", async () => {
+    const app = fastify();
+    await app.register(responsesPlugin, { statusCodes: { noContent: { payload: undefined, statusCode: 204 } } });
+    app.get(
+      "/",
+      route({ Reply: z.object({ 200: z.object({ id: z.string() }) }) }, async (req, reply) => {
+        return reply.created({ id: "test" });
+      })
+    );
+    const response = await app.inject({
+      method: "GET",
+      url: "/",
+    });
+
+    assert.deepStrictEqual(response.json(), {
+      statusCode: 500,
+      error: "Internal Server Error",
+      message: "Reply schema of: / does not have the specified status code: 201.",
+    });
+    assert.equal(response.headers["content-type"], "application/json; charset=utf-8");
+  });
+  it("should not throw an error if returning 400 but it is not in response schema and return as-is", async () => {
+    const app = fastify();
+    await app.register(responsesPlugin, { statusCodes: { noContent: { payload: undefined, statusCode: 204 } } });
+    app.get(
+      "/",
+      route({ Reply: z.object({ 200: z.object({ id: z.string() }) }) }, async (req, reply) => {
+        return reply.badRequest({ id: "test" });
+      })
+    );
+    const response = await app.inject({
+      method: "GET",
+      url: "/",
+    });
+
+    assert.deepStrictEqual(response.json(), { id: "test" });
+    assert.equal(response.headers["content-type"], "application/json; charset=utf-8");
+  });
   describe("strict", () => {
     const exampleSchema = z.object({ id: z.string() });
     it("strict true local mode should add additionalProperties: false", () => {
