@@ -58,7 +58,7 @@ const defaultOptions: FastifyReplyPluginOptions = {
  * })
  * This will use the defaults, but sets `ok` with the new schema
  */
-export const plugin = fp<FastifyReplyPluginOptions>(
+export default fp<FastifyReplyPluginOptions>(
   async (fastify, opts) => {
     const finalOptions: FastifyReplyPluginOptions = {
       statusCodes: new StatusCodeBuilder({
