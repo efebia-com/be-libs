@@ -1,10 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from 'zod';
 import { zodToJsonSchema, type JsonSchema7ObjectType } from 'zod-to-json-schema';
+import { FastifyZodReplyError } from './error.js';
 import { APIHandler, APIOptions, RouteSecurity, RouteTag } from './types.js';
 
-const mapZodError = (zodError: z.ZodError, prefix: string) =>
-    zodError.errors.map(issue => `Error at ${prefix}->${issue.path.join('->')}`).join(';\n');
+const mapZodError = (zodError: z.ZodError, prefix: string) => {
+    return zodError.issues.map(issue => {
+        const pathStr = `Error at ${prefix}->${issue.path.join('->')}`;
+        return issue.message ? `${pathStr}->${issue.message}` : pathStr;
+    }).join('\n');
+};
 
 export type BaseZodSchema = {
     Body?: z.ZodTypeAny;
@@ -124,14 +129,15 @@ export const createRoute = ({ strict: globalStrict = false }: RouteOptions = {})
         preSerialization: (request, reply, payload, done) => {
             const foundSchema = findStatusCode(reply.statusCode, Object.entries(schema.Reply.shape))
             if (!foundSchema) {
-                request.log.warn(`[@efebia/fastify-zod-reply]: Reply schema of: ${request.routeOptions.url} does not have the specified status code: ${reply.statusCode}`)
-                return done(null, payload);
+                if (reply.statusCode >= 400) return done(null, payload)
+                request.log.warn(`[@efebia/fastify-zod-reply]: Reply schema of: ${request.routeOptions.url} does not have the specified status code: ${reply.statusCode}.`)
+                return done(new FastifyZodReplyError(`Reply schema of: ${request.routeOptions.url} does not have the specified status code: ${reply.statusCode}.`, 500));
             }
-            const serialized = (foundSchema[1] as z.AnyZodObject).safeParse(payload);
+            const serialized = (foundSchema[1] as z.ZodType).safeParse(payload);
             if (serialized.success) {
                 return done(null, serialized.data);
             }
-            return done(new Error(mapZodError(serialized.error, 'reply')));
+            return done(new FastifyZodReplyError(mapZodError(serialized.error, 'reply'), 500));
         },
     };
 }
