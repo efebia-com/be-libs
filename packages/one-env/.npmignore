@@ -1,0 +1,10 @@
+src/
+tsconfig.json
+.gitignore
+*.ts
+!*.d.ts
+*.map
+node_modules/
+.yarn/
+yarn.lock
+.DS_Store

@@ -1,0 +1,14 @@
+name: 'Deploy @efebia/one-env'
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+    paths: ['packages/one-env/**', '.github/workflows/common-deploy.yml', '.github/workflows/one-env.yml']
+
+jobs:
+  publish:
+    uses: ./.github/workflows/common-deploy.yml
+    with:
+      package-name: "@efebia/one-env"
+    secrets: inherit
