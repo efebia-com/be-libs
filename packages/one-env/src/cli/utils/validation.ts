@@ -92,7 +92,7 @@ export function calculateValidationStatistics(
  * @returns Formatted issues array
  */
 export function formatZodError(zodError: z.ZodError, envData: any): FormattedIssue[] {
-    return zodError.issues.map(issue => {
+    return zodError.issues.map((issue: z.ZodIssue) => {
         const field = issue.path.join('.');
         const actualValue = field && envData ? getNestedValue(envData, field) : undefined;
         

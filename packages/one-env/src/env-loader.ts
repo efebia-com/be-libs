@@ -102,7 +102,7 @@ export class EnvLoader<TSchema extends z.ZodSchema<any>> {
         } catch (error) {
             if (error instanceof z.ZodError) {
                 console.error('Environment validation failed:');
-                error.issues.forEach((err) => {
+                error.issues.forEach((err: z.ZodIssue) => {
                     console.error(`  - ${err.path.join('.')}: ${err.message}`);
                 });
                 throw new Error('Invalid environment configuration. See errors above.');
