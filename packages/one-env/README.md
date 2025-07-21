@@ -1,4 +1,4 @@
-# one-env
+# @efebia/one-env
 
 Type-safe environment configuration management for Node.js applications with runtime validation and CLI tools.
 
@@ -9,22 +9,23 @@ Type-safe environment configuration management for Node.js applications with run
 - 🛠️ **CLI tools** for generating, validating, and managing environment files
 - 🌍 **Multiple sources**: Load from YAML files or JSON environment variables
 - 🚀 **Production ready**: Validate AWS Secrets Manager configurations
+- 📤 **Upload secrets** to AWS Secrets Manager
 - 💡 **Developer friendly**: Autocomplete for all environment variables
 
 ## Installation
 
 ```bash
 # Using npm
-npm install one-env zod
+npm install @efebia/one-env zod
 
 # Using yarn
-yarn add one-env zod
+yarn add @efebia/one-env zod
 
 # Using pnpm
-pnpm add one-env zod
+pnpm add @efebia/one-env zod
 ```
 
-Note: `zod` v4 is a peer dependency and must be installed separately.
+Note: Zod (^4.0.0) is a peer dependency and must be installed separately.
 
 ## Quick Start
 
@@ -56,12 +57,16 @@ export default EnvSchema;
 ### 2. Use in your application
 
 ```typescript
-// config.ts
-import { createEnvWithInit } from 'one-env';
-import EnvSchema from './env-schema';
+// env.ts
+import { createEnvWithInit } from '@efebia/one-env';
+import EnvSchema from './env-schema.js';
 
-// Create env instance
+// Create env instance (singleton pattern)
 const env = createEnvWithInit(EnvSchema);
+export default env;
+
+// app.ts
+import env from './env.js';
 
 // Initialize with YAML file
 env.init({ file: './env.local.yml' });
@@ -80,11 +85,13 @@ export const config = {
 };
 ```
 
+**Note**: Using `createEnvWithInit` as a singleton helps with concurrency and prevents errors from calling `env.get()` before initialization due to import order issues.
+
 ### 3. Alternative: Immediate initialization
 
 ```typescript
-import { createEnv } from 'one-env';
-import EnvSchema from './env-schema';
+import { createEnv } from '@efebia/one-env';
+import EnvSchema from './env-schema.js';
 
 // Initialize immediately
 const env = createEnv({ 
@@ -98,7 +105,7 @@ const port = env.get('port');
 
 ## CLI Tools
 
-one-env includes powerful CLI tools for managing your environment configuration:
+@efebia/one-env includes powerful CLI tools for managing your environment configuration:
 
 ### Generate environment file
 
@@ -109,7 +116,7 @@ Create a new environment file with default values from your schema:
 one-env generate -s ./env-schema.js
 
 # Generate with custom output
-one-env generate -s ./env-schema.js -o env.example.yml
+one-env generate -s ./env-schema.js -o env.prod.yml
 
 # Force overwrite existing file
 one-env generate -s ./env-schema.js --force
@@ -144,6 +151,29 @@ one-env validate-aws -s ./env-schema.js --secret-name my-app/prod --profile prod
 # With specific region
 one-env validate-aws -s ./env-schema.js --secret-name my-app/prod --region us-east-1
 ```
+
+### Upload to AWS Secrets Manager
+
+Upload your environment configuration to AWS Secrets Manager:
+
+```bash
+# Upload to AWS (with confirmation prompt)
+one-env upload -s ./env-schema.js --file env.prod.yml --secret-name prod-envs
+
+# Upload with environment tag
+one-env upload -s ./env-schema.js --file env.prod.yml --secret-name prod-envs --environment production
+
+# Dry-run to preview what will be uploaded
+one-env upload -s ./env-schema.js --file env.prod.yml --secret-name prod-envs --dry-run
+
+# Skip confirmation prompt (for CI/CD)
+one-env upload -s ./env-schema.js --file env.prod.yml --secret-name prod-envs --force
+
+# With specific AWS profile and region
+one-env upload -s ./env-schema.js --file env.prod.yml --secret-name prod-envs --profile production --region us-east-1
+```
+
+**Security Note**: Never commit files containing actual secrets. Use `.gitignore` to exclude environment files with sensitive data.
 
 ## API Reference
 
@@ -227,49 +257,36 @@ export default z.object({
 
 ### 2. Environment-specific Files
 
-Use different files for different environments:
+The schema auto-generates environment files with defaults:
 
 ```
 env.local.yml      # Local development (gitignored)
-env.test.yml       # Test environment
-env.example.yml    # Example file (committed)
 ```
 
-### 3. CI/CD Integration
+Use the `generate` command to create new environment files from your schema, eliminating the need for example files.
 
-```yaml
-# .github/workflows/validate.yml
-- name: Validate environment
-  run: |
-    npx one-env validate -s ./env-schema.js --json
-    
-- name: Validate production secrets
-  run: |
-    npx one-env validate-aws \
-      -s ./env-schema.js \
-      --secret-name prod/myapp \
-      --profile production
-```
+### 3. Singleton Pattern
 
-### 4. Type Exports
-
-Export types for use across your application:
+Create a singleton instance to avoid initialization issues:
 
 ```typescript
-// config.ts
-import { createEnvWithInit } from 'one-env';
-import { z } from 'zod/v4';
-import EnvSchema from './env-schema';
-
-export type Config = z.infer<typeof EnvSchema>;
+// env.ts
+import { createEnvWithInit } from '@efebia/one-env';
+import EnvSchema from '../../env-schema.js';
 
 const env = createEnvWithInit(EnvSchema);
 export default env;
 ```
 
+This pattern:
+- Prevents race conditions during initialization
+- Handles import order dependencies gracefully
+- Ensures consistent state across your application
+- Avoids errors from calling `env.get()` before `env.init()`
+
 ## Error Handling
 
-one-env provides clear error messages for configuration issues:
+@efebia/one-env provides clear error messages for configuration issues:
 
 ```
 Environment validation failed:
@@ -280,8 +297,8 @@ Environment validation failed:
 
 ## Requirements
 
-- Node.js >= 18.0.0
-- Zod v4 (peer dependency)
+- Node.js >= 20.0.0
+- Zod (^4.0.0 peer dependency)
 
 ## License
 
@@ -293,4 +310,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Support
 
-For bugs and feature requests, please [create an issue](https://github.com/yourusername/one-env/issues).
+For bugs and feature requests, please [create an issue](https://github.com/efebia/be-libs/issues).
