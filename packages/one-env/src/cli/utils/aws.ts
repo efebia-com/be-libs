@@ -2,7 +2,13 @@
  * AWS utilities for the environment CLI tool
  */
 
-import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
+import { 
+    SecretsManagerClient, 
+    GetSecretValueCommand,
+    CreateSecretCommand,
+    UpdateSecretCommand,
+    Tag
+} from '@aws-sdk/client-secrets-manager';
 
 /**
  * Creates an AWS Secrets Manager client
@@ -51,5 +57,45 @@ export async function getSecretValue(client: SecretsManagerClient, secretName: s
             throw new Error(`Secret '${secretName}' not found in AWS Secrets Manager`);
         }
         throw error;
+    }
+}
+
+/**
+ * Creates or updates a secret in AWS Secrets Manager
+ * @param client - SecretsManagerClient instance
+ * @param secretName - Name of the secret to create/update
+ * @param secretData - The data to store in the secret
+ * @param tags - Optional tags to apply to the secret
+ * @throws Error if creation/update fails
+ */
+export async function createOrUpdateSecret(
+    client: SecretsManagerClient, 
+    secretName: string, 
+    secretData: any,
+    tags?: Tag[]
+): Promise<void> {
+    const secretString = JSON.stringify(secretData, null, 2);
+    
+    try {
+        // Try to create the secret first
+        const createCommand = new CreateSecretCommand({
+            Name: secretName,
+            SecretString: secretString,
+            Tags: tags
+        });
+        
+        await client.send(createCommand);
+    } catch (error: any) {
+        if (error.name === 'ResourceExistsException') {
+            // Secret already exists, update it instead
+            const updateCommand = new UpdateSecretCommand({
+                SecretId: secretName,
+                SecretString: secretString
+            });
+            
+            await client.send(updateCommand);
+        } else {
+            throw error;
+        }
     }
 }

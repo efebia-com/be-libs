@@ -23,6 +23,17 @@ export interface ValidateAwsOptions {
     json: boolean;
 }
 
+export interface UploadOptions {
+    schema: string;
+    file: string;
+    secretName: string;
+    region: string;
+    profile?: string;
+    environment?: string;
+    dryRun: boolean;
+    force: boolean;
+}
+
 // Validation result interfaces
 export interface ValidationResult {
     success: boolean;
