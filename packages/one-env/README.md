@@ -9,7 +9,7 @@ Type-safe environment configuration management for Node.js applications with run
 - 🛠️ **CLI tools** for generating, validating, and managing environment files
 - 🌍 **Multiple sources**: Load from YAML files or JSON environment variables
 - 🚀 **Production ready**: Validate AWS Secrets Manager configurations
-- 📤 **Upload secrets** to AWS Secrets Manager
+- 📤 **Push & Pull**: Sync secrets with AWS Secrets Manager
 - 💡 **Developer friendly**: Autocomplete for all environment variables
 
 ## Installation
@@ -152,25 +152,58 @@ one-env validate-aws -s ./env-schema.js --secret-name my-app/prod --profile prod
 one-env validate-aws -s ./env-schema.js --secret-name my-app/prod --region us-east-1
 ```
 
-### Upload to AWS Secrets Manager
+### Pull from AWS Secrets Manager
 
-Upload your environment configuration to AWS Secrets Manager:
+Pull your environment configuration from AWS Secrets Manager to a local file:
 
 ```bash
-# Upload to AWS (with confirmation prompt)
-one-env upload -s ./env-schema.js --file env.prod.yml --secret-name prod-envs
+# Pull from AWS to local file
+one-env pull -s ./env-schema.js --secret-name dev-envs
 
-# Upload with environment tag
-one-env upload -s ./env-schema.js --file env.prod.yml --secret-name prod-envs --environment production
+# Pull with custom output file
+one-env pull -s ./env-schema.js --secret-name prod-envs --output env.prod.yml
 
-# Dry-run to preview what will be uploaded
-one-env upload -s ./env-schema.js --file env.prod.yml --secret-name prod-envs --dry-run
-
-# Skip confirmation prompt (for CI/CD)
-one-env upload -s ./env-schema.js --file env.prod.yml --secret-name prod-envs --force
+# Force overwrite existing file
+one-env pull -s ./env-schema.js --secret-name dev-envs --force
 
 # With specific AWS profile and region
-one-env upload -s ./env-schema.js --file env.prod.yml --secret-name prod-envs --profile production --region us-east-1
+one-env pull -s ./env-schema.js --secret-name dev-envs --profile development --region us-east-1
+```
+
+### Push to AWS Secrets Manager
+
+Push your local environment configuration to AWS Secrets Manager:
+
+```bash
+# Push to AWS (with confirmation prompt)
+one-env push -s ./env-schema.js --file env.prod.yml --secret-name prod-envs
+
+# Push with environment tag
+one-env push -s ./env-schema.js --file env.prod.yml --secret-name prod-envs --environment production
+
+# Dry-run to preview what will be pushed
+one-env push -s ./env-schema.js --file env.prod.yml --secret-name prod-envs --dry-run
+
+# Skip confirmation prompt (for CI/CD)
+one-env push -s ./env-schema.js --file env.prod.yml --secret-name prod-envs --force
+
+# With specific AWS profile and region
+one-env push -s ./env-schema.js --file env.prod.yml --secret-name prod-envs --profile production --region us-east-1
+```
+
+### Typical Workflow
+
+Update a single value in development:
+
+```bash
+# 1. Pull current configuration
+one-env pull -s ./env-schema.js --secret-name dev-envs
+
+# 2. Edit the file locally
+vim env.pulled.yml  # Change databaseUrl or any other value
+
+# 3. Push changes back
+one-env push -s ./env-schema.js --file env.pulled.yml --secret-name dev-envs
 ```
 
 **Security Note**: Never commit files containing actual secrets. Use `.gitignore` to exclude environment files with sensitive data.

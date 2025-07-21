@@ -1,10 +1,10 @@
 /**
- * Upload command implementation
- * Uploads environment configuration to AWS Secrets Manager
+ * Push command implementation
+ * Pushes environment configuration to AWS Secrets Manager
  */
 
 import chalk from 'chalk';
-import { UploadOptions } from '../types.js';
+import { PushOptions } from '../types.js';
 import { createSecretsManagerClient, createOrUpdateSecret, getSecretValue } from '../utils/aws.js';
 import { resolvePath, loadYamlFile } from '../utils/file.js';
 import { validateEnvData } from '../utils/validation.js';
@@ -13,10 +13,10 @@ import { loadSchema, formatSchemaSource } from '../utils/schema-loader.js';
 import readline from 'node:readline/promises';
 
 /**
- * Handles the upload command
+ * Handles the push command
  * @param options - Command options
  */
-export async function handleUploadCommand(options: UploadOptions): Promise<void> {
+export async function handlePushCommand(options: PushOptions): Promise<void> {
     // Configure AWS client
     const client = createSecretsManagerClient(options.region, options.profile);
     
@@ -66,7 +66,7 @@ export async function handleUploadCommand(options: UploadOptions): Promise<void>
                 console.log(`\n${chalk.yellow('Note:')} Secret already exists and will be updated`);
             }
             
-            console.log(`\n${chalk.cyan('Configuration to upload:')}`);
+            console.log(`\n${chalk.cyan('Configuration to push:')}`);
             console.log(JSON.stringify(envData, null, 2));
             
             return;
@@ -90,12 +90,12 @@ export async function handleUploadCommand(options: UploadOptions): Promise<void>
             rl.close();
             
             if (answer.toLowerCase() !== 'yes' && answer.toLowerCase() !== 'y') {
-                console.log('\n' + chalk.yellow('Upload cancelled'));
+                console.log('\n' + chalk.yellow('Push cancelled'));
                 process.exit(0);
             }
         }
         
-        // Upload to AWS
+        // Push to AWS
         printStatus(`${secretExists ? 'Updating' : 'Creating'} secret '${options.secretName}' in AWS Secrets Manager...`, 'info');
         
         const tags = options.environment ? [
@@ -109,7 +109,7 @@ export async function handleUploadCommand(options: UploadOptions): Promise<void>
         
         printStatus(`Secret '${options.secretName}' ${secretExists ? 'updated' : 'created'} successfully!`, 'success');
         
-        console.log(`\n${chalk.green.bold('Success!')} Environment configuration has been uploaded`);
+        console.log(`\n${chalk.green.bold('Success!')} Environment configuration has been pushed`);
         console.log(`\nYou can validate it with:`);
         console.log(chalk.cyan(`  one-env validate-aws --schema ${options.schema} --secret-name ${options.secretName} --region ${options.region}`));
         

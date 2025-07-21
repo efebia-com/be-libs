@@ -7,7 +7,8 @@
  * - generate: Creates new environment files with default values from schema
  * - validate: Validates existing environment files against the schema
  * - validate-aws: Validates AWS Secrets Manager secrets against the schema
- * - upload: Uploads environment configuration to AWS Secrets Manager
+ * - pull: Pulls environment configuration from AWS Secrets Manager
+ * - push: Pushes environment configuration to AWS Secrets Manager
  */
 
 import { Command } from 'commander';
@@ -15,7 +16,8 @@ import chalk from 'chalk';
 import { handleGenerateCommand } from './commands/generate.js';
 import { handleValidateCommand } from './commands/validate.js';
 import { handleValidateAwsCommand } from './commands/validate-aws.js';
-import { handleUploadCommand } from './commands/upload.js';
+import { handlePushCommand } from './commands/push.js';
+import { handlePullCommand } from './commands/pull.js';
 
 // ============================================================================
 // MAIN CLI SETUP
@@ -57,19 +59,31 @@ program
     .option('--json', 'Output results in JSON format', false)
     .action(handleValidateAwsCommand);
 
-// Upload command
+// Pull command
 program
-    .command('upload')
-    .description('Upload environment configuration to AWS Secrets Manager')
+    .command('pull')
+    .description('Pull environment configuration from AWS Secrets Manager')
     .requiredOption('-s, --schema <path>', 'Path to schema file (TypeScript or JavaScript)')
-    .requiredOption('--file <path>', 'Path to the environment file to upload')
+    .option('--secret-name <name>', 'Name of the secret in AWS Secrets Manager', 'envs')
+    .option('--output <file>', 'Output file name', 'env.pulled.yml')
+    .option('--region <region>', 'AWS region', process.env['AWS_REGION'] || 'eu-west-1')
+    .option('--profile <profile>', 'AWS profile to use (optional)')
+    .option('--force', 'Overwrite existing file without confirmation', false)
+    .action(handlePullCommand);
+
+// Push command
+program
+    .command('push')
+    .description('Push environment configuration to AWS Secrets Manager')
+    .requiredOption('-s, --schema <path>', 'Path to schema file (TypeScript or JavaScript)')
+    .requiredOption('--file <path>', 'Path to the environment file to push')
     .option('--secret-name <name>', 'Name of the secret in AWS Secrets Manager', 'envs')
     .option('--region <region>', 'AWS region', process.env['AWS_REGION'] || 'eu-west-1')
     .option('--profile <profile>', 'AWS profile to use (optional)')
     .option('--environment <env>', 'Environment tag (e.g., dev, staging, prod)')
-    .option('--dry-run', 'Preview what would be uploaded without making changes', false)
+    .option('--dry-run', 'Preview what would be pushed without making changes', false)
     .option('--force', 'Skip confirmation prompts', false)
-    .action(handleUploadCommand);
+    .action(handlePushCommand);
 
 // Check dependencies before running
 try {

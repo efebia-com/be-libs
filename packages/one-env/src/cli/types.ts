@@ -23,7 +23,7 @@ export interface ValidateAwsOptions {
     json: boolean;
 }
 
-export interface UploadOptions {
+export interface PushOptions {
     schema: string;
     file: string;
     secretName: string;
@@ -31,6 +31,15 @@ export interface UploadOptions {
     profile?: string;
     environment?: string;
     dryRun: boolean;
+    force: boolean;
+}
+
+export interface PullOptions {
+    schema: string;
+    secretName: string;
+    output: string;
+    region: string;
+    profile?: string;
     force: boolean;
 }
 
