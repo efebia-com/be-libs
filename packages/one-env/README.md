@@ -344,3 +344,10 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## Support
 
 For bugs and feature requests, please [create an issue](https://github.com/efebia/be-libs/issues).
+
+## Changelog
+
+### 1.0.2 (Upcoming)
+- Add `pull` command to download secrets from AWS Secrets Manager
+- Rename `upload` command to `push` for consistent workflow
+- Fix Node.js version requirement (>= 20.0.0)
