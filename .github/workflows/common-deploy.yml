@@ -31,6 +31,36 @@ jobs:
           PACKAGE_NAME=${{ inputs.package-name }}
           ${{ inputs.install-script || 'yarn workspaces focus ${PACKAGE_NAME}' }}
           yarn workspace ${{ inputs.package-name }} build
+      - name: Check if version exists
+        id: version_check
+        run: |
+          PACKAGE_NAME=${{ inputs.package-name }}
+          # Get package directory name (remove @efebia/ prefix)
+          PACKAGE_DIR=$(echo $PACKAGE_NAME | sed 's/@efebia\///')
+          # Get current version from package.json
+          CURRENT_VERSION=$(node -p "require('./packages/$PACKAGE_DIR/package.json').version")
+          
+          echo "Checking if $PACKAGE_NAME@$CURRENT_VERSION exists on npm..."
+          
+          # Check if version exists on npm
+          if npm view "$PACKAGE_NAME@$CURRENT_VERSION" version 2>/dev/null; then
+            echo "Version $CURRENT_VERSION already exists on npm"
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "Version $CURRENT_VERSION does not exist on npm"
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          fi
+      - name: Bump version if exists
+        if: steps.version_check.outputs.exists == 'true'
+        run: |
+          echo "Version ${{ steps.version_check.outputs.current_version }} already exists, bumping patch version..."
+          yarn workspace ${{ inputs.package-name }} version patch
+          # Get new version for logging
+          PACKAGE_DIR=$(echo ${{ inputs.package-name }} | sed 's/@efebia\///')
+          NEW_VERSION=$(node -p "require('./packages/$PACKAGE_DIR/package.json').version")
+          echo "Bumped to version $NEW_VERSION"
       - name: Publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.EFEBIA_NPM_PUBLISH_PKG }}
