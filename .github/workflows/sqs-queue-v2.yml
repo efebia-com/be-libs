@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [ master ]
-    paths: ['packages/sqs-queue-v2/**', 'packages/queue/**', '.github/workflows/common-deploy.yml', '.github/workflows/sqs-queue-v2.yml']
+    paths: ['packages/sqs-queue-v2/**', 'packages/queue/**', '.github/workflows/sqs-queue-v2.yml']
 
 jobs:
   publish:

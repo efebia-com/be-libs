@@ -1,5 +1,10 @@
 name: 'Common Deploy'
 
+# Note: Changes to this workflow file will NOT automatically trigger package deployments.
+# Package workflows no longer watch this file to prevent mass deployments.
+# If you need to update deployment logic for all packages, you must manually trigger
+# each package workflow or update them to temporarily watch this file again.
+
 on:
   workflow_call:
     inputs:

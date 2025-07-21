@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [ master ]
-    paths: ['packages/yaml-to-ts/**', '.github/workflows/common-deploy.yml', '.github/workflows/yaml-to-ts.yml']
+    paths: ['packages/yaml-to-ts/**', '.github/workflows/yaml-to-ts.yml']
 
 jobs:
   publish:

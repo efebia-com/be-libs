@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [ master ]
-    paths: ['packages/jest-match-response/**', '.github/workflows/common-deploy.yml', '.github/workflows/jest-match-response.yml']
+    paths: ['packages/jest-match-response/**', '.github/workflows/jest-match-response.yml']
 
 jobs:
   publish:

@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [ master ]
-    paths: ['packages/fastify-zod-reply/**', '.github/workflows/common-deploy.yml', '.github/workflows/fastify-zod-reply.yml']
+    paths: ['packages/fastify-zod-reply/**', '.github/workflows/fastify-zod-reply.yml']
 
 jobs:
   publish:

@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [ master ]
-    paths: ['packages/pino-mongodb/**', '.github/workflows/common-deploy.yml', '.github/workflows/pino-mongodb.yml']
+    paths: ['packages/pino-mongodb/**', '.github/workflows/pino-mongodb.yml']
 
 jobs:
   publish:

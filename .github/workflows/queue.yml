@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [ master ]
-    paths: ['packages/queue/**', '.github/workflows/common-deploy.yml', '.github/workflows/queue.yml']
+    paths: ['packages/queue/**', '.github/workflows/queue.yml']
 
 jobs:
   publish:
