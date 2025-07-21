@@ -42,9 +42,10 @@ jobs:
           PACKAGE_NAME=${{ inputs.package-name }}
           # Get package directory name (remove @efebia/ prefix)
           PACKAGE_DIR=$(echo $PACKAGE_NAME | sed 's/@efebia\///')
+          PACKAGE_JSON_PATH="./packages/$PACKAGE_DIR/package.json"
           
           # Get current version from package.json
-          LOCAL_VERSION=$(node -p "require('./packages/$PACKAGE_DIR/package.json').version")
+          LOCAL_VERSION=$(node -p "require('$PACKAGE_JSON_PATH').version")
           echo "Local version in package.json: $LOCAL_VERSION"
           
           # Get latest published version from npm
@@ -56,16 +57,24 @@ jobs:
             echo "Local version ($LOCAL_VERSION) is not higher than npm version ($LATEST_NPM_VERSION)"
             echo "Bumping patch version..."
             
-            # First update to match npm version if local is behind
-            if [ "$(printf '%s\n' "$LOCAL_VERSION" "$LATEST_NPM_VERSION" | sort -V | head -n1)" = "$LOCAL_VERSION" ] && [ "$LOCAL_VERSION" != "$LATEST_NPM_VERSION" ]; then
-              echo "Updating local version to match npm version first"
-              yarn workspace ${{ inputs.package-name }} version $LATEST_NPM_VERSION --no-git-tag-version
-            fi
+            # Parse current version
+            IFS='.' read -r major minor patch <<< "$LATEST_NPM_VERSION"
             
-            # Now bump patch version
-            yarn workspace ${{ inputs.package-name }} version patch --no-git-tag-version
-            NEW_VERSION=$(node -p "require('./packages/$PACKAGE_DIR/package.json').version")
-            echo "Bumped to version $NEW_VERSION"
+            # Increment patch version
+            patch=$((patch + 1))
+            NEW_VERSION="$major.$minor.$patch"
+            
+            echo "Bumping version to $NEW_VERSION"
+            
+            # Update package.json using Node.js
+            node -e "
+              const fs = require('fs');
+              const pkg = require('$PACKAGE_JSON_PATH');
+              pkg.version = '$NEW_VERSION';
+              fs.writeFileSync('$PACKAGE_JSON_PATH', JSON.stringify(pkg, null, 2) + '\n');
+            "
+            
+            echo "Updated package.json to version $NEW_VERSION"
           else
             echo "Local version ($LOCAL_VERSION) is higher than npm version ($LATEST_NPM_VERSION), no bump needed"
           fi
