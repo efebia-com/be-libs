@@ -40,7 +40,7 @@ const defaultOptions: FastifyReplyPluginOptions = {
     ok: { statusCode: 200, payload: { message: 'ok' } },
     created: { statusCode: 201, payload: { message: 'created' } },
     accepted: { statusCode: 202, payload: { message: 'accepted' } },
-    noContent: { statusCode: 204, payload: { message: 'noContent' } },
+    noContent: { statusCode: 204, payload: undefined },
     badRequest: { statusCode: 400, payload: { message: 'badRequest' } },
     unauthorized: { statusCode: 401, payload: { message: 'unauthorized' } },
     forbidden: { statusCode: 403, payload: { message: 'forbidden' } },
@@ -65,7 +65,6 @@ export default fp<FastifyReplyPluginOptions>(
 );
 
 export * from './error.js';
-export * from './route.js';
 export * from './routeV4.js';
 export * from './types.js';
 
