@@ -1,15 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from 'zod/v4';
 import { FastifyZodReplyError } from './error.js';
+import { parse, findStatusCode, mapZodError, parseStrict, strictifySchema } from './routeHelpers.js';
 import { APIHandler, APIOptions, RouteSecurity, RouteTag } from './types.js';
-
-
-const mapZodError = (zodError: z.ZodError, prefix: string) => {
-    return zodError.issues.map(issue => {
-        const pathStr = `Error at ${prefix}->${issue.path.join('->')}`;
-        return issue.message ? `${pathStr}->${issue.message}` : pathStr;
-    }).join('\n');
-};
 
 export type BaseZodV4Schema = {
     Body?: z.ZodTypeAny;
@@ -20,6 +13,7 @@ export type BaseZodV4Schema = {
     Security?: (RouteSecurity[keyof RouteSecurity])[];
     Tags?: (keyof RouteTag)[];
 };
+
 export type FastifyZodV4Schema<TZodSchema extends BaseZodV4Schema> = {
     Body: TZodSchema['Body'] extends z.ZodTypeAny ? z.output<TZodSchema['Body']> : undefined;
     Params: TZodSchema['Params'] extends z.ZodTypeAny ? z.output<TZodSchema['Params']> : undefined;
@@ -29,23 +23,6 @@ export type FastifyZodV4Schema<TZodSchema extends BaseZodV4Schema> = {
         : undefined;
 };
 
-const parse = async (schema: z.ZodTypeAny, payload: any, tag: string) => {
-    const result = await schema.safeParseAsync(payload);
-    return {
-        ...result,
-        tag,
-    };
-};
-
-const findStatusCode = (statusCode: number, availableStatusCodes: ([(string | number), any])[]) => {
-    return availableStatusCodes.find(([key]) => {
-        if (!['number','string'].includes(typeof key)) return false;
-        if (typeof key === 'number') return statusCode === key;
-        if (/^[0-9]{3}$/.test(key)) return statusCode === parseInt(key)
-        if (/^[0-9]xx$/i.test(key)) return statusCode.toString()[0] === key[0]
-    })
-}
-
 export type RouteV4Options = {
     /**
      * Set strict mode.
@@ -53,17 +30,6 @@ export type RouteV4Options = {
      * If an object is passed, you can make it more granular
      */
     strict?: boolean | { body: boolean; query: boolean; params: boolean; headers: boolean }
-}
-
-const strictifySchema = (schema: z.ZodType, strict: boolean) => {
-    if (!strict) return schema
-    return 'strict' in schema && typeof schema['strict'] === 'function' ? schema.strict() : schema
-}
-
-
-const parseStrict = (tag: keyof Exclude<NonNullable<RouteV4Options['strict']>, boolean>, value: NonNullable<RouteV4Options['strict']>) => {
-    if (typeof value === 'boolean') return value
-    return value[tag]
 }
 
 export const createRouteV4 = ({ strict: globalStrict = false }: RouteV4Options = {}) => <
