@@ -15,7 +15,9 @@ export type BaseZodV4Schema = {
   Params?: z.ZodTypeAny;
   Query?: z.ZodTypeAny;
   Headers?: z.ZodTypeAny;
-  Reply: z.ZodObject;
+  Reply: z.ZodObject<{
+    [key: string | number]: z.ZodTypeAny;
+  }>;
   Security?: RouteSecurity[keyof RouteSecurity][];
   Tags?: (keyof RouteTag)[];
 };
