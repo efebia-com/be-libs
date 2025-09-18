@@ -1,6 +1,5 @@
 import fp from "fastify-plugin";
 import { createReply } from "./reply.js";
-import { SSEReplyShape } from "./sseRouteV4.js";
 import { mergeDeep } from "./utils.js";
 
 export type StatusCode<TCode> = {
@@ -33,16 +32,7 @@ export type DecoratedReply = {
 };
 
 declare module "fastify" {
-  export interface FastifyRequest {
-    abortController?: AbortController;
-  }
-
-  export interface FastifyReply extends DecoratedReply {
-    sse?<T extends SSEReplyShape>(options: {
-      stream: AsyncGenerator<T>;
-      onError?: (error: unknown) => void;
-    }): Promise<T>;
-  }
+  export interface FastifyReply extends DecoratedReply {}
 }
 
 const defaultOptions: FastifyReplyPluginOptions = {
@@ -57,7 +47,10 @@ const defaultOptions: FastifyReplyPluginOptions = {
     notFound: { statusCode: 404, payload: { message: "notFound" } },
     notAcceptable: { statusCode: 406, payload: { message: "notAcceptable" } },
     conflict: { statusCode: 409, payload: { message: "conflict" } },
-    internalServerError: { statusCode: 500, payload: { message: "internalServerError" } },
+    internalServerError: {
+      statusCode: 500,
+      payload: { message: "internalServerError" },
+    },
   },
 };
 
@@ -81,4 +74,3 @@ export * from "./error.js";
 export * from "./routeV4.js";
 export * from "./sseRouteV4.js";
 export * from "./types.js";
-

@@ -23,7 +23,7 @@ describe("SSERouteV4 Functionality", () => {
           }),
         },
         async (_req, reply) => {
-          return reply.sse!({
+          return reply.sse({
             stream: (async function* () {
               yield { event: "first", data: { id: 1 } };
               yield { event: "second", data: { id: 2 } };
@@ -46,7 +46,9 @@ describe("SSERouteV4 Functionality", () => {
     const app = fastify();
     await app.register(responsesPlugin);
 
-    const newSseRoute = createSSERouteV4({ sse: { validateStream: true } });
+    const newSseRoute = createSSERouteV4({
+      sse: { validateStream: true },
+    });
 
     app.get(
       "/",
@@ -55,10 +57,10 @@ describe("SSERouteV4 Functionality", () => {
           Reply: z.object({
             SSE: z.object({ data: z.object({ valid: z.boolean() }) }),
           }),
-		  },
-		//@ts-expect-error
+        },
+        //@ts-expect-error
         async (_req, reply) => {
-          return reply.sse!({
+          return reply.sse({
             stream: (async function* () {
               yield { data: { valid: true } };
               // This data is intentionally invalid to trigger the error
@@ -73,7 +75,11 @@ describe("SSERouteV4 Functionality", () => {
     const response = await app.inject({ method: "GET", url: "/" });
     const parts = response.body.trim().split("\n\n");
 
-    assert.equal(parts.length, 3, "Should have sent one valid and one error event");
+    assert.equal(
+      parts.length,
+      3,
+      "Should have sent one valid and one error event"
+    );
     assert.equal(parts[0], 'data: {"valid":true}');
     assert.match(
       parts[1],
@@ -95,10 +101,10 @@ describe("SSERouteV4 Functionality", () => {
           Reply: z.object({
             SSE: z.object({ data: z.object({ valid: z.boolean() }) }),
           }),
-		  },
-		//@ts-expect-error
+        },
+        //@ts-expect-error
         async (_req, reply) => {
-          return reply.sse!({
+          return reply.sse({
             stream: (async function* () {
               yield { data: { invalid: "data" } };
             })(),
@@ -122,7 +128,7 @@ describe("SSERouteV4 Functionality", () => {
           Reply: z.object({ SSE: z.object({ data: z.string() }) }),
         },
         async (_req, reply) => {
-          return reply.sse!({
+          return reply.sse({
             stream: (async function* () {
               yield { data: "first message" };
               throw new Error("Stream exploded!");
@@ -162,7 +168,7 @@ describe("SSERouteV4 Functionality", () => {
           }),
         },
         async (_req, reply) => {
-          return reply.sse!({
+          return reply.sse({
             stream: (async function* () {
               yield {
                 id: "abc-123",
@@ -196,7 +202,7 @@ describe("SSERouteV4 Functionality", () => {
       sseRouteV4(
         { Reply: z.object({ SSE: z.object({ data: z.number() }) }) },
         async (req, reply) => {
-          return reply.sse!({
+          return reply.sse({
             stream: (async function* () {
               try {
                 let i = 0;
