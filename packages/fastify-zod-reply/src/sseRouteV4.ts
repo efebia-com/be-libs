@@ -1,6 +1,5 @@
 // sseRouteV4.ts
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { RouteGenericInterface } from "fastify";
 import { z } from "zod/v4";
 import {
   mapZodError,
@@ -75,14 +74,15 @@ export type SSERouteV4Options = {
 
 // default augmentations for SSE handlers
 export type SSEAugmentedAPIHandler<
-  FastifySchema extends RouteGenericInterface,
+  TSchema extends SSEBaseZodV4Schema,
+  FastifySchema extends FastifySSEZodV4Schema<TSchema>,
   RequestAugmentation extends object = {},
   ReplyAugmentation extends object = {}
 > = APIHandler<
   FastifySchema,
   RequestAugmentation & { abortController: AbortController },
   ReplyAugmentation & {
-    sse<T extends SSEReplyShape>(options: {
+    sse<T extends z.input<TSchema["Reply"]>["SSE"]>(options: {
       stream: AsyncGenerator<T>;
       onError?: (error: unknown) => void;
     }): Promise<T>;
@@ -100,6 +100,7 @@ export function createSSERouteV4<
     schema: TSchema,
     handler: NoInfer<
       SSEAugmentedAPIHandler<
+        TSchema,
         FastifySchema,
         RequestAugmentation,
         ReplyAugmentation
@@ -233,10 +234,10 @@ export function createSSERouteV4<
         request.socket.on("close", () => abortController.abort());
         (request as any).abortController = abortController;
 
-        (reply as any).sse = async <T extends SSEReplyShape>(options: {
-          stream: AsyncGenerator<T>;
+        (reply as any).sse = async (options: {
+          stream: AsyncGenerator<any>;
           onError?: (error: unknown) => void;
-        }): Promise<T> =>
+        })=>
           sendSseStream({
             reply,
             stream: options.stream,
