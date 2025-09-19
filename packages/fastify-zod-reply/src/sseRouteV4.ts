@@ -98,18 +98,16 @@ export function createSSERouteV4<
     FastifySchema extends FastifySSEZodV4Schema<TSchema> = FastifySSEZodV4Schema<TSchema>
   >(
     schema: TSchema,
-    handler: SSEAugmentedAPIHandler<
-      FastifySchema,
-      RequestAugmentation,
-      ReplyAugmentation
+    handler: NoInfer<
+      SSEAugmentedAPIHandler<
+        FastifySchema,
+        RequestAugmentation,
+        ReplyAugmentation
+      >
     >,
     options?: SSERouteV4Options
   ): APIOptions<FastifySchema> & {
-    handler: SSEAugmentedAPIHandler<
-      FastifySchema,
-      RequestAugmentation,
-      ReplyAugmentation
-    >;
+    handler: APIHandler<FastifySchema>;
   } => {
     const strict =
       typeof options?.strict !== "undefined"

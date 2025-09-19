@@ -58,13 +58,15 @@ export const createRouteV4 =
     FastifySchema extends FastifyZodV4Schema<TSchema> = FastifyZodV4Schema<TSchema>
   >(
     schema: TSchema,
-    handler: APIHandler<FastifySchema, RequestAugmentation, ReplyAugmentation>,
+    handler: NoInfer<
+      APIHandler<FastifySchema, RequestAugmentation, ReplyAugmentation>
+    >,
     /**
      * If set, these options will override the global route options
      */
     options?: RouteV4Options
   ): APIOptions<FastifySchema> & {
-    handler: APIHandler<FastifySchema, RequestAugmentation, ReplyAugmentation>;
+    handler: APIHandler<FastifySchema>;
   } => {
     const strict =
       typeof options?.strict !== "undefined" ? options?.strict : globalStrict;
