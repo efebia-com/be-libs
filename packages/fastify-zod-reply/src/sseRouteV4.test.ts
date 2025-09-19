@@ -58,9 +58,9 @@ describe("SSERouteV4 Functionality", () => {
             SSE: z.object({ data: z.object({ valid: z.boolean() }) }),
           }),
         },
-        //@ts-expect-error
         async (_req, reply) => {
           return reply.sse({
+            //@ts-expect-error
             stream: (async function* () {
               yield { data: { valid: true } };
               // This data is intentionally invalid to trigger the error
@@ -102,9 +102,9 @@ describe("SSERouteV4 Functionality", () => {
             SSE: z.object({ data: z.object({ valid: z.boolean() }) }),
           }),
         },
-        //@ts-expect-error
         async (_req, reply) => {
           return reply.sse({
+            //@ts-expect-error
             stream: (async function* () {
               yield { data: { invalid: "data" } };
             })(),
