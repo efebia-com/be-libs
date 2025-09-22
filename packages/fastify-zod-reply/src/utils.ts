@@ -24,3 +24,7 @@ export function isObject(item: any) {
   
     return mergeDeep(target, ...sources);
   }
+
+export async function sleep(ms: number) {
+  return new Promise((resolve) => { setTimeout(resolve, ms) })
+}
