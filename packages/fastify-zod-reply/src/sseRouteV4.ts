@@ -5,9 +5,9 @@ import {
   mapZodError,
   parse,
   parseStrict,
-  sendSseStream,
   strictifySchema,
 } from "./routeHelpers.js";
+import { sendSseStream } from "./sseHelpers.js";
 import { APIHandler, APIOptions, RouteSecurity, RouteTag } from "./types.js";
 
 export type SSEReplyShape = {
@@ -237,7 +237,7 @@ export function createSSERouteV4<
         (reply as any).sse = async (options: {
           stream: AsyncGenerator<any>;
           onError?: (error: unknown) => void;
-        })=>
+        }) =>
           sendSseStream({
             reply,
             stream: options.stream,
