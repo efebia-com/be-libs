@@ -54,7 +54,7 @@ export const globFiles = async (
           { error: e, path: osPath },
           "@efebia/fastify-auto-import error on importing plugin"
         );
-        return null;
+        throw e
       }
     })
   );
