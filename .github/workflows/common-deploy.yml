@@ -42,6 +42,9 @@ jobs:
           PACKAGE_NAME=${{ inputs.package-name }}
           # Get package directory name (remove @efebia/ prefix)
           PACKAGE_DIR=$(echo $PACKAGE_NAME | sed 's/@efebia\///')
+          if [[ $PACKAGE_NAME === "@efebia/fastify-auto-import" ]]; then
+            PACKAGE_DIR=auto-import
+          fi
           PACKAGE_JSON_PATH="./packages/$PACKAGE_DIR/package.json"
           
           # Get current version from package.json
