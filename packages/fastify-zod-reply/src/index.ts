@@ -70,7 +70,8 @@ export default fp<FastifyReplyPluginOptions>(
   }
 );
 
-export * from "./error.js";
+export { buildHTTPErrorObject, FastifyZodReplyError } from "./error.js";
 export * from "./routeV4.js";
 export * from "./sseRouteV4.js";
 export * from "./types.js";
+
