@@ -40,6 +40,9 @@ export type SSEBaseZodV4Schema = {
   }>;
   Security?: RouteSecurity[keyof RouteSecurity][];
   Tags?: (keyof RouteTag)[];
+  Description?: string;
+	Summary?: string;
+	Notes?: string;
 };
 
 type TransformSSETo200<T> = {
@@ -142,6 +145,9 @@ export function createSSERouteV4<
       headers?: Record<string, unknown>;
       response?: Record<string, unknown>;
       security?: any;
+      summary?: string;
+      description?: string;
+      notes?: string;
     } = {
       ...(schema.Body && {
         body: z.toJSONSchema(
@@ -195,6 +201,9 @@ export function createSSERouteV4<
       },
       ...(schema.Security && { security: schema.Security }),
       ...(schema.Tags && { tags: schema.Tags }),
+      ...(schema.Description && { description: schema.Description }),
+		  ...(schema.Summary && { summary: schema.Summary }),
+		  ...(schema.Notes && { notes: schema.Notes }),
     };
 
     return {
