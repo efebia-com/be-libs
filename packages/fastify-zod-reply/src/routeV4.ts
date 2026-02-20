@@ -20,6 +20,9 @@ export type BaseZodV4Schema = {
   }>;
   Security?: RouteSecurity[keyof RouteSecurity][];
   Tags?: (keyof RouteTag)[];
+  Description?: string;
+	Summary?: string;
+	Notes?: string;
 };
 
 export type FastifyZodV4Schema<TZodSchema extends BaseZodV4Schema> = {
@@ -70,6 +73,7 @@ export const createRouteV4 =
   } => {
     const strict =
       typeof options?.strict !== "undefined" ? options?.strict : globalStrict;
+    
     const finalResult: {
       body?: Record<string, unknown>;
       params?: Record<string, unknown>;
@@ -77,6 +81,9 @@ export const createRouteV4 =
       headers?: Record<string, unknown>;
       response?: Record<number, unknown>;
       security?: any;
+      summary?: string;
+      description?: string;
+      notes?: string;
     } = {
       ...(schema.Body && {
         body: z.toJSONSchema(
@@ -110,6 +117,9 @@ export const createRouteV4 =
       )["properties"],
       ...(schema.Security && { security: schema.Security }),
       ...(schema.Tags && { tags: schema.Tags }),
+      ...(schema.Description && { description: schema.Description }),
+		  ...(schema.Summary && { summary: schema.Summary }),
+		  ...(schema.Notes && { notes: schema.Notes }),
     };
 
     return {
