@@ -30,25 +30,31 @@ export type ErrorMethodParam<TThis, TCode extends number> =
 
 export type ErrorCodePayload<TVal> = [TVal] extends [string] ? { message: TVal } : TVal;
 
+type DefaultArgs<TReply, TCode extends number, TParam> =
+  CodePayload<TReply, TCode, never> extends never ? [val?: undefined] : [val: TParam];
+
 declare module "fastify" {
   export interface FastifyReply {
-    ok(val?: ResponseParam<this, 200>): CodePayload<this, 200>;
-    created(val?: ResponseParam<this, 201>): CodePayload<this, 201>;
-    accepted(val?: ResponseParam<this, 202>): CodePayload<this, 202>;
+    ok(...args: DefaultArgs<this, 200, ResponseParam<this, 200>>): CodePayload<this, 200, { message: "ok" }>;
+    ok(val: ResponseParam<this, 200>): CodePayload<this, 200>;
+    created(...args: DefaultArgs<this, 201, ResponseParam<this, 201>>): CodePayload<this, 201, { message: "created" }>;
+    created(val: ResponseParam<this, 201>): CodePayload<this, 201>;
+    accepted(...args: DefaultArgs<this, 202, ResponseParam<this, 202>>): CodePayload<this, 202, { message: "accepted" }>;
+    accepted(val: ResponseParam<this, 202>): CodePayload<this, 202>;
     noContent(): CodePayload<this, 204, void>;
-    badRequest(val?: undefined): { message: "badRequest" };
+    badRequest(...args: DefaultArgs<this, 400, ErrorMethodParam<this, 400>>): CodePayload<this, 400, { message: "badRequest" }>;
     badRequest<TVal extends ErrorMethodParam<this, 400>>(val: TVal): ErrorCodePayload<TVal>;
-    unauthorized(val?: undefined): { message: "unauthorized" };
+    unauthorized(...args: DefaultArgs<this, 401, ErrorMethodParam<this, 401>>): CodePayload<this, 401, { message: "unauthorized" }>;
     unauthorized<TVal extends ErrorMethodParam<this, 401>>(val: TVal): ErrorCodePayload<TVal>;
-    forbidden(val?: undefined): { message: "forbidden" };
+    forbidden(...args: DefaultArgs<this, 403, ErrorMethodParam<this, 403>>): CodePayload<this, 403, { message: "forbidden" }>;
     forbidden<TVal extends ErrorMethodParam<this, 403>>(val: TVal): ErrorCodePayload<TVal>;
-    notFound(val?: undefined): { message: "notFound" };
+    notFound(...args: DefaultArgs<this, 404, ErrorMethodParam<this, 404>>): CodePayload<this, 404, { message: "notFound" }>;
     notFound<TVal extends ErrorMethodParam<this, 404>>(val: TVal): ErrorCodePayload<TVal>;
-    notAcceptable(val?: undefined): { message: "notAcceptable" };
+    notAcceptable(...args: DefaultArgs<this, 406, ErrorMethodParam<this, 406>>): CodePayload<this, 406, { message: "notAcceptable" }>;
     notAcceptable<TVal extends ErrorMethodParam<this, 406>>(val: TVal): ErrorCodePayload<TVal>;
-    conflict(val?: undefined): { message: "conflict" };
+    conflict(...args: DefaultArgs<this, 409, ErrorMethodParam<this, 409>>): CodePayload<this, 409, { message: "conflict" }>;
     conflict<TVal extends ErrorMethodParam<this, 409>>(val: TVal): ErrorCodePayload<TVal>;
-    internalServerError(val?: undefined): { message: "internalServerError" };
+    internalServerError(...args: DefaultArgs<this, 500, ErrorMethodParam<this, 500>>): CodePayload<this, 500, { message: "internalServerError" }>;
     internalServerError<TVal extends ErrorMethodParam<this, 500>>(val: TVal): ErrorCodePayload<TVal>;
   }
 }
