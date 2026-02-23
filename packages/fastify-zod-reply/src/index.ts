@@ -2,7 +2,58 @@ import fp from "fastify-plugin";
 import { createReply } from "./reply.js";
 import { mergeDeep } from "./utils.js";
 
-export type StatusCode<TCode> = {
+// to check against fastify schemas specific to the current route in routeV4
+export type CodePayload<TReply, TCode extends number, TFallback = unknown> = TReply extends {
+  send(payload?: infer TMap): any;
+}
+  ? TMap extends Record<TCode, infer T>
+    ? T
+    : TFallback
+  : TFallback;
+
+// to allow for additional props if payload is a plain old object
+export type ResponseParam<TReply, TCode extends number> =
+  CodePayload<TReply, TCode> extends Record<PropertyKey, unknown>
+    ? CodePayload<TReply, TCode> & Record<string, unknown>
+    : CodePayload<TReply, TCode>;
+
+export type ValidateResponseParam<TThis, TCode extends number> =
+  CodePayload<TThis, TCode, never> extends never
+    ? string
+    : CodePayload<TThis, TCode, never> extends { message: infer M }
+      ? M & string
+      : never;
+
+export type ErrorMethodParam<TThis, TCode extends number> =
+  | ValidateResponseParam<TThis, TCode>
+  | ResponseParam<TThis, TCode>;
+
+export type ErrorCodePayload<TVal> = [TVal] extends [string] ? { message: TVal } : TVal;
+
+declare module "fastify" {
+  export interface FastifyReply {
+    ok(val?: ResponseParam<this, 200>): CodePayload<this, 200>;
+    created(val?: ResponseParam<this, 201>): CodePayload<this, 201>;
+    accepted(val?: ResponseParam<this, 202>): CodePayload<this, 202>;
+    noContent(): CodePayload<this, 204, void>;
+    badRequest(val?: undefined): { message: "badRequest" };
+    badRequest<TVal extends ErrorMethodParam<this, 400>>(val: TVal): ErrorCodePayload<TVal>;
+    unauthorized(val?: undefined): { message: "unauthorized" };
+    unauthorized<TVal extends ErrorMethodParam<this, 401>>(val: TVal): ErrorCodePayload<TVal>;
+    forbidden(val?: undefined): { message: "forbidden" };
+    forbidden<TVal extends ErrorMethodParam<this, 403>>(val: TVal): ErrorCodePayload<TVal>;
+    notFound(val?: undefined): { message: "notFound" };
+    notFound<TVal extends ErrorMethodParam<this, 404>>(val: TVal): ErrorCodePayload<TVal>;
+    notAcceptable(val?: undefined): { message: "notAcceptable" };
+    notAcceptable<TVal extends ErrorMethodParam<this, 406>>(val: TVal): ErrorCodePayload<TVal>;
+    conflict(val?: undefined): { message: "conflict" };
+    conflict<TVal extends ErrorMethodParam<this, 409>>(val: TVal): ErrorCodePayload<TVal>;
+    internalServerError(val?: undefined): { message: "internalServerError" };
+    internalServerError<TVal extends ErrorMethodParam<this, 500>>(val: TVal): ErrorCodePayload<TVal>;
+  }
+}
+
+export type StatusCode<TCode extends number> = {
   statusCode: TCode;
   payload: any;
 };
@@ -24,16 +75,8 @@ export interface FastifyStatusCode {
 export type FastifyReplyPluginOptions = {
   statusCodes?: {
     [key in keyof FastifyStatusCode]?: FastifyStatusCode[key];
-  };
+  } & Record<string, StatusCode<any>>;
 };
-
-export type DecoratedReply = {
-  [key in keyof FastifyStatusCode]: <T>(val?: T) => T;
-};
-
-declare module "fastify" {
-  export interface FastifyReply extends DecoratedReply {}
-}
 
 const defaultOptions: FastifyReplyPluginOptions = {
   statusCodes: {
@@ -47,10 +90,7 @@ const defaultOptions: FastifyReplyPluginOptions = {
     notFound: { statusCode: 404, payload: { message: "notFound" } },
     notAcceptable: { statusCode: 406, payload: { message: "notAcceptable" } },
     conflict: { statusCode: 409, payload: { message: "conflict" } },
-    internalServerError: {
-      statusCode: 500,
-      payload: { message: "internalServerError" },
-    },
+    internalServerError: { statusCode: 500, payload: { message: "internalServerError" } },
   },
 };
 
@@ -67,11 +107,10 @@ export default fp<FastifyReplyPluginOptions>(
   {
     fastify: "5.x",
     name: "@efebia/fastify-zod-reply",
-  }
+  },
 );
 
 export { buildHTTPErrorObject, FastifyZodReplyError } from "./error.js";
 export * from "./routeV4.js";
 export * from "./sseRouteV4.js";
 export * from "./types.js";
-

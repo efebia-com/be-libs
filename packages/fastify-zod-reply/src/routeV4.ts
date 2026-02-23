@@ -2,11 +2,11 @@
 import { z } from "zod/v4";
 import { FastifyZodReplyError } from "./error.js";
 import {
-  findStatusCode,
-  mapZodError,
-  parse,
-  parseStrict,
-  strictifySchema,
+    findStatusCode,
+    mapZodError,
+    parse,
+    parseStrict,
+    strictifySchema,
 } from "./routeHelpers.js";
 import { APIHandler, APIOptions, RouteSecurity, RouteTag } from "./types.js";
 
@@ -25,6 +25,10 @@ export type BaseZodV4Schema = {
 	Notes?: string;
 };
 
+type ErrorReplyFallback<TReply> = {
+  [K in Exclude<400 | 401 | 403 | 404 | 406 | 409 | 500, keyof TReply>]?: { message: string }
+};
+
 export type FastifyZodV4Schema<TZodSchema extends BaseZodV4Schema> = {
   Body: TZodSchema["Body"] extends z.ZodTypeAny
     ? z.output<TZodSchema["Body"]>
@@ -36,7 +40,7 @@ export type FastifyZodV4Schema<TZodSchema extends BaseZodV4Schema> = {
     ? z.output<TZodSchema["Query"]>
     : undefined;
   Reply: TZodSchema["Reply"] extends z.ZodTypeAny
-    ? z.input<TZodSchema["Reply"]>[keyof z.input<TZodSchema["Reply"]>]
+    ? z.input<TZodSchema["Reply"]> & ErrorReplyFallback<z.input<TZodSchema["Reply"]>>
     : undefined;
 };
 
@@ -124,6 +128,7 @@ export const createRouteV4 =
 
     return {
       schema: finalResult,
+      //@ts-ignore
       handler,
       preHandler: async (request, reply) => {
         const results = await Promise.all([

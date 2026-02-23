@@ -29,8 +29,8 @@ describe("routeV4", () => {
 
     app.get(
       "/",
-      //@ts-ignore
       routeV4({ Reply: z.object({ 204: z.null() }) }, async (_req, reply) => {
+        //@ts-expect-error
         return reply.noContent({ test: "test" });
       })
     );
@@ -65,13 +65,14 @@ describe("routeV4", () => {
       "application/json; charset=utf-8"
     );
   });
-  it("should throw an error if returning 200 but it is not in response schema", async () => {
+  it("should throw an error if returning 201 but it is not in response schema", async () => {
     const app = fastify();
     await app.register(responsesPlugin);
     app.get(
       "/",
       routeV4(
         { Reply: z.object({ 200: z.object({ id: z.string() }) }) },
+        //@ts-expect-error
         async (req, reply) => {
           return reply.created({ id: "test" });
         }
@@ -101,7 +102,7 @@ describe("routeV4", () => {
       routeV4(
         { Reply: z.object({ 200: z.object({ id: z.string() }) }) },
         async (req, reply) => {
-          return reply.badRequest({ id: "test" });
+          throw reply.badRequest('quattrocento');
         }
       )
     );
@@ -110,7 +111,7 @@ describe("routeV4", () => {
       url: "/",
     });
 
-    assert.deepStrictEqual(response.json(), { id: "test" });
+    assert.deepStrictEqual(response.json(), { message: "quattrocento" });
     assert.equal(
       response.headers["content-type"],
       "application/json; charset=utf-8"
@@ -187,14 +188,14 @@ describe("routeV4", () => {
         );
         const field = t === "query" ? "querystring" : t;
         assert.equal(
-          (value.schema?.[field] as any).additionalProperties,
+          ((value.schema as any)?.[field]).additionalProperties,
           false
         );
         allFields
           .filter((u) => u !== field)
           .forEach((f) =>
             assert.equal(
-              (value.schema?.[f] as any).additionalProperties,
+              ((value.schema as any)?.[f]).additionalProperties,
               undefined
             )
           );
