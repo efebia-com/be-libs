@@ -29,10 +29,34 @@ describe("routeV4", () => {
 
     app.get(
       "/",
-      //@ts-ignore
       routeV4({ Reply: z.object({ 204: z.null() }) }, async (_req, reply) => {
+        //@ts-expect-error
         return reply.noContent({ test: "test" });
       })
+    );
+    const response = await app.inject({
+      method: "GET",
+      url: "/",
+    });
+
+    assert.equal(response.statusCode, 500);
+  });
+  it("should throw an error when sending default reply.ok against a 200 schema with content", async () => {
+    const app = fastify();
+    await app.register(responsesPlugin);
+    app.get(
+      "/",
+      routeV4(
+        {
+          Reply: z.object({
+            200: z.object({ id: z.string() })
+          })
+        },
+        async (req, reply) => {
+          //@ts-expect-error
+          return reply.ok();
+        }
+      )
     );
     const response = await app.inject({
       method: "GET",
@@ -47,7 +71,11 @@ describe("routeV4", () => {
     app.get(
       "/",
       routeV4(
-        { Reply: z.object({ 200: z.object({ id: z.string() }) }) },
+        {
+          Reply: z.object({
+            200: z.object({ id: z.string() })
+          })
+        },
         async (req, reply) => {
           return reply.ok({ id: "test" });
         }
@@ -65,13 +93,15 @@ describe("routeV4", () => {
       "application/json; charset=utf-8"
     );
   });
-  it("should throw an error if returning 200 but it is not in response schema", async () => {
+
+  it("should throw an error if returning 201 but it is not in response schema", async () => {
     const app = fastify();
     await app.register(responsesPlugin);
     app.get(
       "/",
       routeV4(
         { Reply: z.object({ 200: z.object({ id: z.string() }) }) },
+        //@ts-expect-error
         async (req, reply) => {
           return reply.created({ id: "test" });
         }
@@ -99,9 +129,13 @@ describe("routeV4", () => {
     app.get(
       "/",
       routeV4(
-        { Reply: z.object({ 200: z.object({ id: z.string() }) }) },
+        {
+          Reply: z.object({
+            200: z.object({ id: z.string() })
+          })
+        },
         async (req, reply) => {
-          return reply.badRequest({ id: "test" });
+          throw reply.badRequest('quattrocento');
         }
       )
     );
@@ -110,11 +144,167 @@ describe("routeV4", () => {
       url: "/",
     });
 
-    assert.deepStrictEqual(response.json(), { id: "test" });
+    assert.deepStrictEqual(response.json(), { statusCode: 400, error: "Bad Request", message: "quattrocento" });
     assert.equal(
       response.headers["content-type"],
       "application/json; charset=utf-8"
     );
+  });
+
+  it("should allow reply.ok() with no args when 200 is not in the schema", async () => {
+    const app = fastify();
+    await app.register(responsesPlugin);
+    app.get(
+      "/",
+      routeV4(
+        { Reply: z.object({ 204: z.null() }) },
+        async (_req, reply) => {
+          // 200 is not in schema, so ok() without args should be allowed at type level
+          // but at runtime routeV4 rejects success codes not in the schema
+          return reply.ok();
+        }
+      )
+    );
+    const response = await app.inject({ method: "GET", url: "/" });
+    assert.equal(response.statusCode, 500);
+  });
+
+  it("should type-error when calling badRequest() with no args and 400 is in the schema", async () => {
+    const app = fastify();
+    await app.register(responsesPlugin);
+    app.get(
+      "/",
+      routeV4(
+        {
+          Reply: z.object({
+            200: z.object({ id: z.string() }),
+            400: z.object({ reason: z.string() })
+          })
+        },
+        async (_req, reply) => {
+          //@ts-expect-error
+          throw reply.badRequest();
+        }
+      )
+    );
+    const response = await app.inject({ method: "GET", url: "/" });
+    assert.equal(response.statusCode, 500);
+  });
+
+  it("should allow badRequest() with no args when 400 is not in the schema", async () => {
+    const app = fastify();
+    await app.register(responsesPlugin);
+    app.get(
+      "/",
+      routeV4(
+        { Reply: z.object({ 200: z.object({ id: z.string() }) }) },
+        async (_req, reply) => {
+          throw reply.badRequest();
+        }
+      )
+    );
+    const response = await app.inject({ method: "GET", url: "/" });
+    assert.equal(response.statusCode, 400);
+    assert.deepStrictEqual(response.json(), { message: "badRequest" });
+  });
+
+  it("should validate badRequest payload against 400 schema when defined", async () => {
+    const app = fastify();
+    await app.register(responsesPlugin);
+    app.get(
+      "/",
+      routeV4(
+        {
+          Reply: z.object({
+            200: z.object({ id: z.string() }),
+            400: z.object({ reason: z.string() })
+          })
+        },
+        async (_req, reply) => {
+          return reply.badRequest({ reason: "invalid input" });
+        }
+      )
+    );
+    const response = await app.inject({ method: "GET", url: "/" });
+    assert.equal(response.statusCode, 400);
+    assert.deepStrictEqual(response.json(), { reason: "invalid input" });
+  });
+
+  it("should type-error when calling created() with wrong payload shape", async () => {
+    const app = fastify();
+    await app.register(responsesPlugin);
+    app.get(
+      "/",
+      routeV4(
+        { Reply: z.object({ 201: z.object({ name: z.string() }) }) },
+        async (_req, reply) => {
+          //@ts-expect-error - payload does not match 201 schema
+          return reply.created({ id: "wrong-field" });
+        }
+      )
+    );
+    const response = await app.inject({ method: "GET", url: "/" });
+    assert.equal(response.statusCode, 500);
+  });
+
+  it("should return 201 with valid payload matching schema", async () => {
+    const app = fastify();
+    await app.register(responsesPlugin);
+    app.get(
+      "/",
+      routeV4(
+        { Reply: z.object({ 201: z.object({ name: z.string() }) }) },
+        async (_req, reply) => {
+          return reply.created({ name: "alice" });
+        }
+      )
+    );
+    const response = await app.inject({ method: "GET", url: "/" });
+    assert.equal(response.statusCode, 201);
+    assert.deepStrictEqual(response.json(), { name: "alice" });
+  });
+
+  it("should type-error when calling notFound with wrong message when 404 schema has specific message", async () => {
+    const app = fastify();
+    await app.register(responsesPlugin);
+    app.get(
+      "/",
+      routeV4(
+        {
+          Reply: z.object({
+            200: z.object({ id: z.string() }),
+            404: z.object({ message: z.literal("not found") })
+          })
+        },
+        async (_req, reply) => {
+          //@ts-expect-error - message must be "not found", not "wrong"
+          throw reply.notFound("wrong");
+        }
+      )
+    );
+    const response = await app.inject({ method: "GET", url: "/" });
+    assert.equal(response.statusCode, 404);
+  });
+
+  it("should allow notFound with correct literal message from 404 schema", async () => {
+    const app = fastify();
+    await app.register(responsesPlugin);
+    app.get(
+      "/",
+      routeV4(
+        {
+          Reply: z.object({
+            200: z.object({ id: z.string() }),
+            404: z.object({ message: z.literal("not found") })
+          })
+        },
+        async (_req, reply) => {
+          throw reply.notFound("not found");
+        }
+      )
+    );
+    const response = await app.inject({ method: "GET", url: "/" });
+    assert.equal(response.statusCode, 404);
   });
 
   describe("strict", () => {
@@ -187,14 +377,14 @@ describe("routeV4", () => {
         );
         const field = t === "query" ? "querystring" : t;
         assert.equal(
-          (value.schema?.[field] as any).additionalProperties,
+          ((value.schema as any)?.[field]).additionalProperties,
           false
         );
         allFields
           .filter((u) => u !== field)
           .forEach((f) =>
             assert.equal(
-              (value.schema?.[f] as any).additionalProperties,
+              ((value.schema as any)?.[f]).additionalProperties,
               undefined
             )
           );
