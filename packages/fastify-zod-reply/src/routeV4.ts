@@ -1,13 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from "zod/v4";
 import { FastifyZodReplyError } from "./error.js";
-import {
-    findStatusCode,
-    mapZodError,
-    parse,
-    parseStrict,
-    strictifySchema,
-} from "./routeHelpers.js";
+import { buildZodJsonSchemaParams, findStatusCode, mapZodError, parse, parseStrict, strictifySchema } from "./routeHelpers.js";
 import { APIHandler, APIOptions, RouteSecurity, RouteTag } from "./types.js";
 
 export type BaseZodV4Schema = {
@@ -21,24 +15,18 @@ export type BaseZodV4Schema = {
   Security?: RouteSecurity[keyof RouteSecurity][];
   Tags?: (keyof RouteTag)[];
   Description?: string;
-	Summary?: string;
-	Notes?: string;
+  Summary?: string;
+  Notes?: string;
 };
 
 type ErrorReplyFallback<TReply> = {
-  [K in Exclude<400 | 401 | 403 | 404 | 406 | 409 | 500, keyof TReply>]?: { message: string }
+  [K in Exclude<400 | 401 | 403 | 404 | 406 | 409 | 500, keyof TReply>]?: { message: string };
 };
 
 export type FastifyZodV4Schema<TZodSchema extends BaseZodV4Schema> = {
-  Body: TZodSchema["Body"] extends z.ZodTypeAny
-    ? z.output<TZodSchema["Body"]>
-    : undefined;
-  Params: TZodSchema["Params"] extends z.ZodTypeAny
-    ? z.output<TZodSchema["Params"]>
-    : undefined;
-  Querystring: TZodSchema["Query"] extends z.ZodTypeAny
-    ? z.output<TZodSchema["Query"]>
-    : undefined;
+  Body: TZodSchema["Body"] extends z.ZodTypeAny ? z.output<TZodSchema["Body"]> : undefined;
+  Params: TZodSchema["Params"] extends z.ZodTypeAny ? z.output<TZodSchema["Params"]> : undefined;
+  Querystring: TZodSchema["Query"] extends z.ZodTypeAny ? z.output<TZodSchema["Query"]> : undefined;
   Reply: TZodSchema["Reply"] extends z.ZodTypeAny
     ? z.input<TZodSchema["Reply"]> & ErrorReplyFallback<z.input<TZodSchema["Reply"]>>
     : undefined;
@@ -50,34 +38,25 @@ export type RouteV4Options = {
    * If true, it applies to body, query, params and headers.
    * If an object is passed, you can make it more granular
    */
-  strict?:
-    | boolean
-    | { body: boolean; query: boolean; params: boolean; headers: boolean };
+  strict?: boolean | { body: boolean; query: boolean; params: boolean; headers: boolean };
 };
 
 export const createRouteV4 =
-  <
-    RequestAugmentation extends object = {},
-    ReplyAugmentation extends object = {}
-  >({ strict: globalStrict = false }: RouteV4Options = {}) =>
-  <
-    TSchema extends BaseZodV4Schema,
-    FastifySchema extends FastifyZodV4Schema<TSchema> = FastifyZodV4Schema<TSchema>
-  >(
+  <RequestAugmentation extends object = {}, ReplyAugmentation extends object = {}>({
+    strict: globalStrict = false,
+  }: RouteV4Options = {}) =>
+  <TSchema extends BaseZodV4Schema, FastifySchema extends FastifyZodV4Schema<TSchema> = FastifyZodV4Schema<TSchema>>(
     schema: TSchema,
-    handler: NoInfer<
-      APIHandler<FastifySchema, RequestAugmentation, ReplyAugmentation>
-    >,
+    handler: NoInfer<APIHandler<FastifySchema, RequestAugmentation, ReplyAugmentation>>,
     /**
      * If set, these options will override the global route options
      */
-    options?: RouteV4Options
+    options?: RouteV4Options,
   ): APIOptions<FastifySchema> & {
     handler: APIHandler<FastifySchema>;
   } => {
-    const strict =
-      typeof options?.strict !== "undefined" ? options?.strict : globalStrict;
-    
+    const strict = typeof options?.strict !== "undefined" ? options?.strict : globalStrict;
+
     const finalResult: {
       body?: Record<string, unknown>;
       params?: Record<string, unknown>;
@@ -90,40 +69,25 @@ export const createRouteV4 =
       notes?: string;
     } = {
       ...(schema.Body && {
-        body: z.toJSONSchema(
-          strictifySchema(schema.Body, parseStrict("body", strict)),
-          { reused: "inline", target: "draft-7", io: "input" }
-        ),
+        body: z.toJSONSchema(strictifySchema(schema.Body, parseStrict("body", strict)), buildZodJsonSchemaParams('input')),
       }),
       ...(schema.Params && {
-        params: z.toJSONSchema(
-          strictifySchema(schema.Params, parseStrict("params", strict)),
-          { reused: "inline", target: "draft-7", io: "input" }
-        ),
+        params: z.toJSONSchema(strictifySchema(schema.Params, parseStrict("params", strict)), buildZodJsonSchemaParams('input')),
       }),
       ...(schema.Query && {
-        querystring: z.toJSONSchema(
-          strictifySchema(schema.Query, parseStrict("query", strict)),
-          { reused: "inline", target: "draft-7", io: "input" }
-        ),
+        querystring: z.toJSONSchema(strictifySchema(schema.Query, parseStrict("query", strict)), buildZodJsonSchemaParams('input')),
       }),
       ...(schema.Headers && {
-        headers: z.toJSONSchema(
-          strictifySchema(schema.Headers, parseStrict("headers", strict)),
-          { reused: "inline", target: "draft-7", io: "input" }
-        ),
+        headers: z.toJSONSchema(strictifySchema(schema.Headers, parseStrict("headers", strict)), buildZodJsonSchemaParams('input')),
       }),
       response: (
-        z.toJSONSchema(schema.Reply.partial(), {
-          reused: "inline",
-          target: "draft-7",
-        }) as { properties: Record<number, unknown> }
+        z.toJSONSchema(schema.Reply.partial(), buildZodJsonSchemaParams('output')) as { properties: Record<number, unknown> }
       )["properties"],
       ...(schema.Security && { security: schema.Security }),
       ...(schema.Tags && { tags: schema.Tags }),
       ...(schema.Description && { description: schema.Description }),
-		  ...(schema.Summary && { summary: schema.Summary }),
-		  ...(schema.Notes && { notes: schema.Notes }),
+      ...(schema.Summary && { summary: schema.Summary }),
+      ...(schema.Notes && { notes: schema.Notes }),
     };
 
     return {
@@ -133,12 +97,8 @@ export const createRouteV4 =
       preHandler: async (request, reply) => {
         const results = await Promise.all([
           ...(schema.Body ? [parse(schema.Body, request.body, "body")] : []),
-          ...(schema.Params
-            ? [parse(schema.Params, request.params, "params")]
-            : []),
-          ...(schema.Query
-            ? [parse(schema.Query, request.query, "query")]
-            : []),
+          ...(schema.Params ? [parse(schema.Params, request.params, "params")] : []),
+          ...(schema.Query ? [parse(schema.Query, request.query, "query")] : []),
         ]);
 
         for (const result of results) {
@@ -152,37 +112,29 @@ export const createRouteV4 =
           }
         }
 
-        request.body =
-          (results.find((r) => r.tag === "body") as any)?.data || {};
-        request.params =
-          (results.find((r) => r.tag === "params") as any)?.data || {};
-        request.query =
-          (results.find((r) => r.tag === "query") as any)?.data || {};
+        request.body = (results.find((r) => r.tag === "body") as any)?.data || {};
+        request.params = (results.find((r) => r.tag === "params") as any)?.data || {};
+        request.query = (results.find((r) => r.tag === "query") as any)?.data || {};
       },
       preSerialization: (request, reply, payload, done) => {
-        const foundSchema = findStatusCode(
-          reply.statusCode,
-          Object.entries(schema.Reply.shape)
-        );
+        const foundSchema = findStatusCode(reply.statusCode, Object.entries(schema.Reply.shape));
         if (!foundSchema) {
           if (reply.statusCode >= 400) return done(null, payload);
           request.log.warn(
-            `[@efebia/fastify-zod-reply]: Reply schema of: ${request.routeOptions.url} does not have the specified status code: ${reply.statusCode}.`
+            `[@efebia/fastify-zod-reply]: Reply schema of: ${request.routeOptions.url} does not have the specified status code: ${reply.statusCode}.`,
           );
           return done(
             new FastifyZodReplyError(
               `Reply schema of: ${request.routeOptions.url} does not have the specified status code: ${reply.statusCode}.`,
-              500
-            )
+              500,
+            ),
           );
         }
         const serialized = (foundSchema[1] as z.ZodType).safeParse(payload);
         if (serialized.success) {
           return done(null, serialized.data);
         }
-        return done(
-          new FastifyZodReplyError(mapZodError(serialized.error, "reply"), 500)
-        );
+        return done(new FastifyZodReplyError(mapZodError(serialized.error, "reply"), 500));
       },
     };
   };
