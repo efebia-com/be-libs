@@ -1,7 +1,7 @@
 import assert from "assert";
 import fastify from "fastify";
 import { describe, it } from "node:test";
-import z from "zod";
+import z from "zod/v4";
 import responsesPlugin from "./index";
 import { createSSERouteV4, sseRouteV4 } from "./sseRouteV4";
 import { sleep } from "./utils";
