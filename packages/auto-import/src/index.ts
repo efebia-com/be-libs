@@ -7,7 +7,8 @@ const plugin = fp<Globber>(async (fastify, opts) => {
         routeFile: opts.routeFile ?? 'routes',
         directory: opts.directory ?? 'src/plugins',
         log: opts.log || fastify.log,
-        excludedDirectories: opts.excludedDirectories ?? []
+        excludedDirectories: opts.excludedDirectories ?? [],
+        recursive: opts.recursive ?? false
     });
 
     await Promise.all(globbedFiles.map(async (globbedFile) => {
