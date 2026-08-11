@@ -3,7 +3,6 @@ import path from "node:path";
 import url, { fileURLToPath } from "node:url";
 import pino from "pino";
 import pkgUp from "pkg-up";
-import { serial } from "./serial.js";
 
 export type Globber = {
   directory?: string;
@@ -30,47 +29,49 @@ const collectRecursivePlugins = async (
   opts: { routeFile: string; packageType: string; excludedDirectories: string[]; log?: pino.BaseLogger }
 ): Promise<any[]> => {
   const entries = await readdir(dir, { withFileTypes: true });
-  const results: any[] = [];
+  const dirEntries = entries.filter(
+    (entry) => entry.isDirectory() && !opts.excludedDirectories.includes(entry.name)
+  );
 
-  for (const entry of entries) {
-    if (!entry.isDirectory()) continue;
-    if (opts.excludedDirectories.includes(entry.name)) continue;
-
-    const subDir = path.join(dir, entry.name);
-    const subEntries = await readdir(subDir);
-    const routeFileName = opts.routeFile.replace('.js', '');
-    const hasRouteFile = subEntries.some(
-      (f) => f === `${routeFileName}.js` || f === `${routeFileName}.ts`
-    );
-
-    if (hasRouteFile) {
-      const osPath = path.join(
-        subDir,
-        opts.packageType === 'module' ? `${routeFileName}.js` : routeFileName
+  const perDirResults = await Promise.all(
+    dirEntries.map(async (entry) => {
+      const subDir = path.join(dir, entry.name);
+      const subEntries = await readdir(subDir);
+      const routeFileName = opts.routeFile.replace('.js', '');
+      const hasRouteFile = subEntries.some(
+        (f) => f === `${routeFileName}.js` || f === `${routeFileName}.ts`
       );
-      const href = url.pathToFileURL(osPath).href;
-      try {
-        if (opts.packageType === 'module') {
-          const imported = await import(href);
-          if (imported.default) results.push(imported.default);
-        } else {
-          const imported = require(osPath);
-          if (imported) results.push(imported);
-        }
-      } catch (e) {
-        opts.log?.error(
-          { error: e, path: osPath },
-          '@efebia/fastify-auto-import error on importing plugin'
+
+      const own: any[] = [];
+      if (hasRouteFile) {
+        const osPath = path.join(
+          subDir,
+          opts.packageType === 'module' ? `${routeFileName}.js` : routeFileName
         );
-        throw e;
+        const href = url.pathToFileURL(osPath).href;
+        try {
+          if (opts.packageType === 'module') {
+            const imported = await import(href);
+            if (imported.default) own.push(imported.default);
+          } else {
+            const imported = require(osPath);
+            if (imported) own.push(imported);
+          }
+        } catch (e) {
+          opts.log?.error(
+            { error: e, path: osPath },
+            '@efebia/fastify-auto-import error on importing plugin'
+          );
+          throw e;
+        }
       }
-    }
 
-    const nested = await collectRecursivePlugins(subDir, opts);
-    results.push(...nested);
-  }
+      const nested = await collectRecursivePlugins(subDir, opts);
+      return [...own, ...nested];
+    })
+  );
 
-  return results;
+  return perDirResults.flat();
 };
 
 export const globFiles = async (
@@ -94,8 +95,8 @@ export const globFiles = async (
 
   const filteredDirectories = routesDirectories.filter(dir => !opts.excludedDirectories.includes(dir))
   
-  const importedFiles = await serial(
-    filteredDirectories.map((dir) => async () => {
+  const importedFiles = await Promise.all(
+    filteredDirectories.map(async (dir) => {
       const osPath = path.join(
         pluginsDirectory,
         dir,
