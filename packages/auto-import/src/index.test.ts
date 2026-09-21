@@ -158,3 +158,45 @@ describe("Recursive routes", () => {
     assert.ok(!paths.some((p) => p.includes("test-nested")));
   });
 });
+
+describe("File-based routing", () => {
+  const build = async (extra: Record<string, unknown> = {}) => {
+    const fastify = Fastify();
+    await fastify.register(fastifyAutoImport, {
+      startingDirectory,
+      directory: "fixtures/file-based",
+      fileBasedRouting: true,
+      ...extra,
+    });
+    await fastify.ready();
+    return fastify;
+  };
+
+  it("derives prefixes from folders and :params from [brackets]", async () => {
+    const fastify = await build();
+    assert.strictEqual((await fastify.inject("/api/users")).statusCode, 200);
+    assert.strictEqual((await fastify.inject({ method: "POST", url: "/api/users" })).statusCode, 201);
+    assert.deepStrictEqual((await fastify.inject("/api/users/42")).json(), { userId: "42" });
+    assert.strictEqual((await fastify.inject({ method: "DELETE", url: "/api/users/42" })).statusCode, 204);
+    assert.strictEqual((await fastify.inject("/api/admin/reports/extra")).statusCode, 200);
+  });
+
+  it("adds no segment for _folders and (groups)", async () => {
+    const fastify = await build();
+    assert.strictEqual((await fastify.inject("/api")).statusCode, 200);
+    assert.strictEqual((await fastify.inject("/api/things")).statusCode, 200);
+  });
+
+  it("keeps every routes file in its own scope: a parent's hooks do not touch its children", async () => {
+    const fastify = await build();
+    assert.strictEqual((await fastify.inject("/api/admin")).statusCode, 403);
+    assert.strictEqual((await fastify.inject({ url: "/api/admin", headers: { "x-admin": "1" } })).statusCode, 200);
+    assert.strictEqual((await fastify.inject("/api/admin/reports")).statusCode, 200);
+    assert.strictEqual((await fastify.inject("/api/users")).statusCode, 200);
+  });
+
+  it("respects excludedDirectories", async () => {
+    const fastify = await build({ excludedDirectories: ["admin"] });
+    assert.strictEqual((await fastify.inject("/api/admin/reports/extra")).statusCode, 404);
+  });
+});

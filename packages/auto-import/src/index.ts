@@ -1,7 +1,21 @@
 import fp from 'fastify-plugin';
-import { Globber, globFiles } from './globber.js';
+import { Globber, globFiles, resolvePluginsDirectory } from './globber.js';
+import { registerRoutes, scanRoutes } from './router.js';
 
 const plugin = fp<Globber>(async (fastify, opts) => {
+    if (opts.fileBasedRouting) {
+        const directory = opts.directory ?? 'src/plugins';
+        const { packageType, pluginsDirectory } = await resolvePluginsDirectory({ ...opts, directory });
+        const routes = await scanRoutes(pluginsDirectory, {
+            routeFile: opts.routeFile ?? 'routes',
+            packageType,
+            excludedDirectories: opts.excludedDirectories ?? [],
+            log: opts.log || fastify.log,
+        });
+        await registerRoutes(fastify, routes);
+        return;
+    }
+
     const globbedFiles = await globFiles({
         ...opts,
         routeFile: opts.routeFile ?? 'routes',
