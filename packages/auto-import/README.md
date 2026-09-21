@@ -70,6 +70,7 @@ A `fastify-plugin` compatible plugin. Register it with `fastify.register()`.
 | `routeFile` | `string` | `'routes'` | File name (without extension) to import from each subdirectory. |
 | `excludedDirectories` | `string[]` | `[]` | Subdirectory names to skip. |
 | `recursive` | `boolean` | `false` | Scan nested subdirectories for route files, not just direct children. |
+| `fileBasedRouting` | `boolean` | `false` | Derive each folder's URL prefix from its path. See below. |
 | `log` | `pino.BaseLogger` | Fastify logger | Logger instance for import errors. |
 
 ## Recursive mode
@@ -103,6 +104,29 @@ src/plugins/
 Without `recursive`, only `users/routes.ts` and `orders/routes.ts` would be registered. With `recursive: true`, `users/profile/routes.ts` and `orders/items/routes.ts` are picked up as well.
 
 `excludedDirectories` still applies at every depth — a matching directory name is skipped along with all its descendants.
+
+## File-based routing
+
+Set `fileBasedRouting: true` to make folders the URL. It walks the whole tree (no need for `recursive`).
+
+```
+src/routes/
+  api/
+    users/
+      routes.ts            ← /api/users
+      get.ts               ← plain handler, imported by routes.ts (not auto-loaded)
+      [userId]/
+        routes.ts          ← /api/users/:userId
+    (private)/
+      tasks/routes.ts      ← /api/tasks  ((private) adds no segment)
+```
+
+- The full folder path is the URL. Each `routes.ts` is registered flat, in its own encapsulated scope, with that path as `prefix`, so it only declares paths relative to its folder (`app.get('/', ...)`, `app.get('/export', ...)`).
+- Scopes are independent: hooks in a parent folder's `routes.ts` never apply to child folders (and vice versa).
+- `[id]` becomes `:id`. Folders named `_x` or `(group)` add no segment.
+- Only the `routes` file is loaded. Anything else in the folder (handlers, schemas) is yours to import from it.
+- Middleware is not built in. Add hooks or `preHandler`s in each `routes.ts` that needs them.
+- `excludedDirectories` and `routeFile` behave as usual.
 
 ## License
 

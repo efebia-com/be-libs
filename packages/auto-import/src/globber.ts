@@ -11,9 +11,10 @@ export type Globber = {
   log?: pino.BaseLogger;
   excludedDirectories?: string[];
   recursive?: boolean;
+  fileBasedRouting?: boolean;
 };
 
-const getPackageType = async (directory: string) => {
+export const getPackageType = async (directory: string) => {
   const nearestPackage = await pkgUp({ cwd: directory });
   if (nearestPackage) {
     if ('require' in global) {
@@ -21,6 +22,33 @@ const getPackageType = async (directory: string) => {
     }
     const file = await readFile(nearestPackage, { encoding: 'utf-8' });
     return JSON.parse(file).type;
+  }
+};
+
+export const resolvePluginsDirectory = async (opts: Pick<Globber, 'directory' | 'startingDirectory'> & { directory: string }) => {
+  const packageType = await getPackageType(opts.directory);
+  const startingDirectory = packageType === 'module' ? path.dirname(fileURLToPath(opts.startingDirectory)) : opts.startingDirectory;
+  return { packageType, pluginsDirectory: path.join(startingDirectory, opts.directory) };
+};
+
+export const importPlugin = async (
+  dir: string,
+  fileName: string,
+  packageType: string,
+  entries: string[],
+  log?: pino.BaseLogger
+): Promise<any | undefined> => {
+  const name = fileName.replace('.js', '');
+  if (!entries.some((f) => f === `${name}.js` || f === `${name}.ts`)) return undefined;
+  const osPath = path.join(dir, packageType === 'module' ? `${name}.js` : name);
+  try {
+    if (packageType === 'module') {
+      return (await import(url.pathToFileURL(osPath).href)).default;
+    }
+    return require(osPath);
+  } catch (e) {
+    log?.error({ error: e, path: osPath }, '@efebia/fastify-auto-import error on importing plugin');
+    throw e;
   }
 };
 
@@ -75,7 +103,7 @@ const collectRecursivePlugins = async (
 };
 
 export const globFiles = async (
-  opts: Required<Globber> & { log?: pino.BaseLogger }
+  opts: Required<Omit<Globber, "fileBasedRouting">> & { log?: pino.BaseLogger }
 ) => {
   const packageType = await getPackageType(opts.directory);
   const startingDirectory = packageType === 'module' ? path.dirname(fileURLToPath(opts.startingDirectory)) : opts.startingDirectory;
