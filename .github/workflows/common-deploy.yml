@@ -4,6 +4,13 @@ name: 'Common Deploy'
 # Package workflows no longer watch this file to prevent mass deployments.
 # If you need to update deployment logic for all packages, you must manually trigger
 # each package workflow or update them to temporarily watch this file again.
+#
+# Publishing uses npm trusted publishing (OIDC): no npm token is stored anywhere.
+# Each package must have a Trusted Publisher configured on npmjs.com
+# (package Settings -> Trusted Publisher -> GitHub Actions) with:
+#   organization: efebia-com, repository: be-libs,
+#   workflow filename: the CALLER workflow (e.g. one-env.yml), not this file.
+# The caller workflow must grant `id-token: write`.
 
 on:
   workflow_call:
@@ -19,15 +26,19 @@ jobs:
   publish:
     name: 'Publish'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Print package name
         run: echo Publishing ${{ inputs.package-name }}
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v5
         with:
-          node-version: '18.x'
+          # Node 24 ships npm >= 11.5.1, required for trusted publishing
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
           cache: 'yarn'
           scope: '@efebia'
@@ -36,9 +47,18 @@ jobs:
           PACKAGE_NAME=${{ inputs.package-name }}
           ${{ inputs.install-script || 'yarn workspaces focus ${PACKAGE_NAME}' }}
           yarn workspace ${{ inputs.package-name }} build
+      - name: Pack
+        # yarn pack resolves workspace: ranges and applies publishConfig
+        run: yarn workspace ${{ inputs.package-name }} pack --out "$RUNNER_TEMP/package.tgz"
       - name: Publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.EFEBIA_NPM_PUBLISH_PKG }}
         run: |
-          echo "npmAuthToken: ${NODE_AUTH_TOKEN}" >> .yarnrc.yml
-          yarn workspace ${{ inputs.package-name }} npm publish
+          TGZ="$RUNNER_TEMP/package.tgz"
+          tar -xOzf "$TGZ" package/package.json > "$RUNNER_TEMP/package.json"
+          NAME=$(node -p "require(process.argv[1]).name" "$RUNNER_TEMP/package.json")
+          VERSION=$(node -p "require(process.argv[1]).version" "$RUNNER_TEMP/package.json")
+          if [ -n "$(npm view "${NAME}@${VERSION}" version 2>/dev/null)" ]; then
+            echo "::notice::${NAME}@${VERSION} is already on npm, nothing to publish"
+            exit 0
+          fi
+          echo "npm $(npm --version)"
+          npm publish "$TGZ" --access public --provenance

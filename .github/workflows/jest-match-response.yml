@@ -6,9 +6,12 @@ on:
     branches: [ master ]
     paths: ['packages/jest-match-response/**', '.github/workflows/jest-match-response.yml']
 
+permissions:
+  contents: read
+  id-token: write # npm trusted publishing (OIDC)
+
 jobs:
   publish:
     uses: ./.github/workflows/common-deploy.yml
     with:
       package-name: "@efebia/jest-match-response"
-    secrets: inherit

@@ -31,5 +31,10 @@
             "require": "./lib/cjs/index.js",
             "import": "./lib/esm/index.js"
         }
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/efebia-com/be-libs.git",
+        "directory": "packages/auto-import"
     }
 }

@@ -6,9 +6,12 @@ on:
     branches: [ master ]
     paths: ['packages/pino-mongodb/**', '.github/workflows/pino-mongodb.yml']
 
+permissions:
+  contents: read
+  id-token: write # npm trusted publishing (OIDC)
+
 jobs:
   publish:
     uses: ./.github/workflows/common-deploy.yml
     with:
       package-name: "@efebia/pino-mongodb"
-    secrets: inherit

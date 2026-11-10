@@ -49,7 +49,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/efebia/be-libs.git",
+    "url": "git+https://github.com/efebia-com/be-libs.git",
     "directory": "packages/one-env"
   }
 }

@@ -15,5 +15,10 @@
     "main": "./lib",
     "dependencies": {
         "mongoose": "^8.13.2"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/efebia-com/be-libs.git",
+        "directory": "packages/mongoose-utils"
     }
 }

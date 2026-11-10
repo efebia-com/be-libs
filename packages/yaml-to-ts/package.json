@@ -22,5 +22,10 @@
     "files": [
         "/lib"
     ],
-    "bin": "lib/yaml-to-ts.js"
+    "bin": "lib/yaml-to-ts.js",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/efebia-com/be-libs.git",
+        "directory": "packages/yaml-to-ts"
+    }
 }

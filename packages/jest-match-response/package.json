@@ -24,5 +24,10 @@
     "engines": {
         "node": ">=18.0.0"
     },
-    "main": "./lib"
+    "main": "./lib",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/efebia-com/be-libs.git",
+        "directory": "packages/jest-match-response"
+    }
 }

@@ -12,5 +12,10 @@
     "scripts": {
         "build": "tsc"
     },
-    "main": "./lib"
+    "main": "./lib",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/efebia-com/be-libs.git",
+        "directory": "packages/queue"
+    }
 }

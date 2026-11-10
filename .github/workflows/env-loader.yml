@@ -6,9 +6,12 @@ on:
     branches: [ master ]
     paths: ['packages/env-loader/**', '.github/workflows/env-loader.yml']
 
+permissions:
+  contents: read
+  id-token: write # npm trusted publishing (OIDC)
+
 jobs:
   publish:
     uses: ./.github/workflows/common-deploy.yml
     with:
       package-name: "@efebia/env-loader"
-    secrets: inherit
