@@ -94,6 +94,47 @@ fastify.get('/events', sseRouteV4(
 
 The `SSE` key in the `Reply` schema maps to the `200` status code with `text/event-stream` content type. `request.abortController` is automatically wired to the socket `close` event.
 
+## Custom validation errors
+
+When `Body`, `Params` or `Query` fail Zod validation, `routeV4` and `sseRouteV4` reply `400` with `{ "message": "Error at <source>-><path>-><message>" }` (one line per issue). To send something else, provide a `validationErrorFormatter` that receives the raw Zod issues and the source:
+
+```ts
+import {
+  createRouteV4,
+  type ValidationErrorFormatter,
+} from '@efebia/fastify-zod-reply';
+
+const formatter: ValidationErrorFormatter = (issues, source) => ({
+  statusCode: 400,
+  body: {
+    code: 'VALIDATION_ERROR',
+    message: 'Invalid request data',
+    errors: issues.map((issue) => ({
+      source,
+      path: issue.path.join('.'),
+      rule: issue.code === 'invalid_type' ? 'type' : 'invalid',
+      code: issue.code,
+      message: issue.message,
+    })),
+  },
+});
+
+// plugin-wide default
+await fastify.register(fastifyZodReply, { validationErrorFormatter: formatter });
+// or per factory
+const routeV4 = createRouteV4({ validationErrorFormatter: formatter });
+// or per route
+fastify.post('/x', routeV4(schema, handler, { validationErrorFormatter: formatter }));
+```
+
+- Signature: `(issues: ValidationIssue[], source: 'body' | 'query' | 'params' | 'headers') => { statusCode?: number; body: unknown }`. `statusCode` defaults to `400`.
+- Precedence: route option, then `createRouteV4`/`createSSERouteV4` option, then plugin option, then the built-in text.
+- The formatter is called once per failing source; the first failing source in `body`, `params`, `query` order wins.
+- A string `body` is sent verbatim, anything else as JSON with `application/json`. Custom bodies bypass the route's `400` reply schema, so they are not stripped or rejected by it.
+- `defaultValidationErrorFormatter` is exported and reproduces the built-in output.
+- `'headers'` is part of the source type but not emitted today: headers are only checked by Fastify's JSON-schema validation, not by the Zod pre-handler.
+- Only request validation is affected. Reply validation (`500`) and SSE stream-item errors keep their text format.
+
 ## API
 
 ### `routeV4(schema, handler, options?)`

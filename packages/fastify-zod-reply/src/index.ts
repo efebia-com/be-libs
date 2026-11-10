@@ -1,6 +1,7 @@
 import fp from "fastify-plugin";
 import { createReply } from "./reply.js";
 import { mergeDeep } from "./utils.js";
+import { ValidationErrorFormatter, VALIDATION_FORMATTER_DECORATOR } from "./validationError.js";
 
 // to check against fastify schemas specific to the current route in routeV4
 export type CodePayload<TReply, TCode extends number, TFallback = unknown> = TReply extends {
@@ -79,6 +80,10 @@ export interface FastifyStatusCode {
 }
 
 export type FastifyReplyPluginOptions = {
+  /**
+   * Default formatter for request validation errors of every routeV4/sseRouteV4 in this scope.
+   */
+  validationErrorFormatter?: ValidationErrorFormatter;
   statusCodes?: {
     [key in keyof FastifyStatusCode]?: FastifyStatusCode[key];
   } & Record<string, StatusCode<any>>;
@@ -107,6 +112,10 @@ export default fp<FastifyReplyPluginOptions>(
       fastify.decorateReply(key, createReply(value.statusCode, value.payload));
     });
 
+    if (opts.validationErrorFormatter) {
+      fastify.decorate(VALIDATION_FORMATTER_DECORATOR, opts.validationErrorFormatter);
+    }
+
     fastify.decorateRequest("abortController");
     fastify.decorateReply("sse");
   },
@@ -120,3 +129,10 @@ export { buildHTTPErrorObject, FastifyZodReplyError } from "./error.js";
 export * from "./routeV4.js";
 export * from "./sseRouteV4.js";
 export * from "./types.js";
+export {
+  defaultValidationErrorFormatter,
+  type ValidationErrorFormatter,
+  type ValidationErrorResult,
+  type ValidationIssue,
+  type ValidationSource,
+} from "./validationError.js";

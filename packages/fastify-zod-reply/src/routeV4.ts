@@ -2,6 +2,7 @@
 import { z } from "zod/v4";
 import { FastifyZodReplyError } from "./error.js";
 import { buildZodJsonSchemaParams, findStatusCode, mapZodError, parse, parseStrict, strictifySchema } from "./routeHelpers.js";
+import { sendValidationError, ValidationErrorFormatter, ValidationSource } from "./validationError.js";
 import { APIHandler, APIOptions, RouteSecurity, RouteTag } from "./types.js";
 
 export type BaseZodV4Schema = {
@@ -39,11 +40,17 @@ export type RouteV4Options = {
    * If an object is passed, you can make it more granular
    */
   strict?: boolean | { body: boolean; query: boolean; params: boolean; headers: boolean };
+  /**
+   * Builds the reply sent when request validation fails.
+   * Precedence: route option, then this factory option, then the plugin option, then the built-in text formatter.
+   */
+  validationErrorFormatter?: ValidationErrorFormatter;
 };
 
 export const createRouteV4 =
   <RequestAugmentation extends object = {}, ReplyAugmentation extends object = {}>({
     strict: globalStrict = false,
+    validationErrorFormatter: globalFormatter,
   }: RouteV4Options = {}) =>
   <TSchema extends BaseZodV4Schema, FastifySchema extends FastifyZodV4Schema<TSchema> = FastifyZodV4Schema<TSchema>>(
     schema: TSchema,
@@ -55,6 +62,7 @@ export const createRouteV4 =
   ): APIOptions<FastifySchema> & {
     handler: APIHandler<FastifySchema>;
   } => {
+    const validationErrorFormatter = options?.validationErrorFormatter ?? globalFormatter;
     const strict = typeof options?.strict !== "undefined" ? options?.strict : globalStrict;
 
     const finalResult: {
@@ -103,12 +111,7 @@ export const createRouteV4 =
 
         for (const result of results) {
           if (!result.success) {
-            return reply
-              .code(400 as any)
-              .type("application/json")
-              .send({
-                message: mapZodError(result.error, result.tag),
-              } as any);
+            return sendValidationError(request, reply, result.error.issues, result.tag as ValidationSource, validationErrorFormatter);
           }
         }
 
