@@ -6,6 +6,10 @@ on:
     branches: [ master ]
     paths: ['packages/sqs-queue-v3/**', 'packages/queue/**', '.github/workflows/sqs-queue-v3.yml']
 
+permissions:
+  contents: read
+  id-token: write # npm trusted publishing (OIDC)
+
 jobs:
   publish:
     uses: ./.github/workflows/common-deploy.yml
@@ -13,5 +17,4 @@ jobs:
       package-name: "@efebia/sqs-queue-v3"
       install-script: |
         yarn workspaces focus @efebia/sqs-queue-v3
-        yarn workspace @efebia/queue build      
-    secrets: inherit
+        yarn workspace @efebia/queue build

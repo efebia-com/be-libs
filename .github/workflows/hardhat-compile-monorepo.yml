@@ -6,9 +6,12 @@ on:
     branches: [ master ]
     paths: ['packages/hardhat-compile-monorepo/**', '.github/workflows/hardhat-compile-monorepo.yml']
 
+permissions:
+  contents: read
+  id-token: write # npm trusted publishing (OIDC)
+
 jobs:
   publish:
     uses: ./.github/workflows/common-deploy.yml
     with:
       package-name: "@efebia/hardhat-compile-monorepo"
-    secrets: inherit
