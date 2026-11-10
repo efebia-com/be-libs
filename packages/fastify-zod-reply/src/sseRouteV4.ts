@@ -2,11 +2,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from "zod/v4";
 import {
-  mapZodError,
   parse,
   parseStrict,
   strictifySchema,
 } from "./routeHelpers.js";
+import { sendValidationError, ValidationErrorFormatter, ValidationSource } from "./validationError.js";
 import { sendSseStream } from "./sseHelpers.js";
 import { APIHandler, APIOptions, RouteSecurity, RouteTag } from "./types.js";
 
@@ -68,6 +68,11 @@ export type SSERouteV4Options = {
   strict?:
     | boolean
     | { body: boolean; query: boolean; params: boolean; headers: boolean };
+  /**
+   * Builds the reply sent when request validation fails.
+   * Precedence: route option, then this factory option, then the plugin option, then the built-in text formatter.
+   */
+  validationErrorFormatter?: ValidationErrorFormatter;
   sse?: {
     keepAliveInterval?: number;
     onError?: undefined | ((error: unknown) => void);
@@ -120,6 +125,7 @@ export function createSSERouteV4<
         ? globalOptions.strict
         : false;
 
+    const validationErrorFormatter = options?.validationErrorFormatter ?? globalOptions.validationErrorFormatter;
     const sseOptions = { ...globalOptions.sse, ...options?.sse };
 
     const responseJsonSchema = (
@@ -222,12 +228,7 @@ export function createSSERouteV4<
 
         for (const result of results) {
           if (!result.success) {
-            return reply
-              .code(400 as any)
-              .type("application/json")
-              .send({
-                message: mapZodError(result.error, result.tag),
-              } as any);
+            return sendValidationError(request, reply, result.error.issues, result.tag as ValidationSource, validationErrorFormatter);
           }
         }
 

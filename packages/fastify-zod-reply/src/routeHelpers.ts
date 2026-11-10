@@ -31,14 +31,16 @@ export const findStatusCode = (statusCode: number, availableStatusCodes: [string
   });
 };
 
-export const mapZodError = (zodError: z.ZodError, prefix: string) => {
-  return zodError.issues
+export const mapZodIssues = (issues: z.core.$ZodIssue[], prefix: string) => {
+  return issues
     .map((issue) => {
       const pathStr = `Error at ${prefix}->${issue.path.join("->")}`;
       return issue.message ? `${pathStr}->${issue.message}` : pathStr;
     })
     .join("\n");
 };
+
+export const mapZodError = (zodError: z.ZodError, prefix: string) => mapZodIssues(zodError.issues, prefix);
 
 export const buildZodJsonSchemaParams = (io: "input" | "output") => {
   return {
